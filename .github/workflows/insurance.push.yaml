@@ -1,6 +1,6 @@
 name: CI (insurance)
 on:
-  pull_request:
+  push:
     branches:
       - insurance
 jobs:

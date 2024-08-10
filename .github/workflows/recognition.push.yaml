@@ -1,6 +1,6 @@
 name: CI (recognition)
 on:
-  pull_request:
+  push:
     branches:
       - recognition
 jobs:
