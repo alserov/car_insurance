@@ -1,0 +1,55 @@
+name: CI (gateway)
+on:
+  pull_request:
+    branches:
+      - gateway
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        directory: [gateway]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Go environment
+        uses: actions/setup-go@v3
+        with:
+          go-version: '1.22'
+
+      - name: Install Go dependencies
+        run: |
+          cd ${{ matrix.directory }}
+          go mod tidy
+
+      - name: Run linters for Go
+        run: |
+          cd ${{ matrix.directory }}
+          golangci-lint run
+
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        directory: [ gateway ]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Go environment
+        uses: actions/setup-go@v3
+        with:
+          go-version: '1.22'
+
+      - name: Install Go dependencies
+        run: |
+          cd ${{ matrix.directory }}
+          go mod tidy
+
+      - name: Run tests for Go
+        run: |
+          cd ${{ matrix.directory }}
+          go test ./...
