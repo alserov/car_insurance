@@ -1,0 +1,100 @@
+name: CI
+on:
+  pull_request:
+    branches:
+      - main
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        directory: [contract, insurance, gateway, recognition]
+        language: [go, python]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Go environment
+        if: matrix.language == 'go'
+        uses: actions/setup-go@v3
+        with:
+          go-version: '1.22'
+
+      - name: Set up Python environment
+        if: matrix.language == 'python'
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.8'
+
+      - name: Install Go dependencies
+        if: matrix.language == 'go'
+        run: |
+          cd ${{ matrix.directory }}
+          go mod tidy
+
+      - name: Install Python dependencies
+        if: matrix.language == 'python'
+        run: |
+          python -m venv venv
+          source venv/bin/activate
+          pip install -r recognition/requirements.txt
+
+      - name: Run linters for Go
+        if: matrix.language == 'go'
+        run: |
+          cd ${{ matrix.directory }}
+          golangci-lint run
+
+      - name: Run linters for Python
+        if: matrix.language == 'python'
+        run: |
+          source venv/bin/activate
+          flake8 recognition
+
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        directory: [ contract, insurance, gateway, recognition ]
+        language: [ go, python ]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Go environment
+        if: matrix.language == 'go'
+        uses: actions/setup-go@v3
+        with:
+          go-version: '1.18'  # Specify your Go version here
+
+      - name: Set up Python environment
+        if: matrix.language == 'python'
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.8'  # Specify your Python version here
+
+      - name: Install Go dependencies
+        if: matrix.language == 'go'
+        run: |
+          cd ${{ matrix.directory }}
+          go mod tidy
+
+      - name: Install Python dependencies
+        if: matrix.language == 'python'
+        run: |
+          python -m venv venv
+          source venv/bin/activate
+          pip install -r recognition/requirements.txt
+
+      - name: Run tests for Go
+        if: matrix.language == 'go'
+        run: |
+          cd ${{ matrix.directory }}
+          go test ./...
+
+      - name: Run tests for Python
+        if: matrix.language == 'python'
+        run: |
+          source venv/bin/activate
+          pytest recognition/tests
