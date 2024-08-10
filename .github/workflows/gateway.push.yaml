@@ -1,6 +1,6 @@
 name: CI (gateway)
 on:
-  pull_request:
+  push:
     branches:
       - gateway
 jobs:

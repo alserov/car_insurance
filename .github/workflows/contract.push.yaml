@@ -1,6 +1,6 @@
 name: CI (contract)
 on:
-  pull_request:
+  push:
     branches:
       - contract
 jobs:
