@@ -36,8 +36,10 @@ func ExtractLogger(ctx context.Context) Logger {
 	return l
 }
 
+type ContextKey string
+
 const (
-	CtxContextKey = "logger"
+	CtxContextKey ContextKey = "logger"
 )
 
 const (
