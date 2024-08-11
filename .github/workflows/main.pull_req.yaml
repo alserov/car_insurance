@@ -42,9 +42,9 @@ jobs:
 
       - name: Run linters for Go
         if: matrix.language == 'go'
-        run: |
-          cd ${{ matrix.directory }}
-          golangci-lint run
+        uses: golangci/golangci-lint-action@v4
+        with:
+          working-directory: ${{ matrix.directory }}
 
       - name: Run linters for Python
         if: matrix.language == 'python'

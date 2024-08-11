@@ -24,10 +24,10 @@ jobs:
           cd ${{ matrix.directory }}
           go mod tidy
 
-      - name: Run linters for Go
-        run: |
-          cd ${{ matrix.directory }}
-          golangci-lint run
+      - name: Run linters
+        uses: golangci/golangci-lint-action@v4
+        with:
+          working-directory: ${{ matrix.directory }}
 
   test:
     runs-on: ubuntu-latest
