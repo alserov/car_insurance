@@ -18,8 +18,10 @@ type Consumers struct {
 	PayoffCons       async.Consumer[models.Payoff]
 }
 
-func StartServer(ctx context.Context, c Consumers) {
-	s := server{}
+func StartServer(ctx context.Context, c Consumers, srvc service.Service) {
+	s := server{
+		service: srvc,
+	}
 
 	s.consumeNewInsurances(ctx, c.NewInsuranceCons)
 	s.consumePayoffs(ctx, c.PayoffCons)

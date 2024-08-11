@@ -3,8 +3,11 @@ package config
 import "os"
 
 type Config struct {
-	Env    string
-	Broker Kafka
+	Env      string
+	Broker   Kafka
+	Contract struct {
+		Addr string
+	}
 }
 
 type Kafka struct {
