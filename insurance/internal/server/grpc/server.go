@@ -3,8 +3,8 @@ package grpc
 import (
 	"context"
 	"fmt"
-	"github.com/alserov/car_insurance/insurance/internal/app"
 	mw "github.com/alserov/car_insurance/insurance/internal/middleware/grpc"
+	"github.com/alserov/car_insurance/insurance/internal/server"
 	"github.com/alserov/car_insurance/insurance/internal/service"
 	"github.com/alserov/car_insurance/insurance/internal/utils"
 	proto "github.com/alserov/car_insurance/insurance/pkg/grpc"
@@ -13,7 +13,7 @@ import (
 	"net"
 )
 
-func NewServer(srvc service.Service) app.Server {
+func NewServer(srvc service.Service) server.Server {
 	s := grpc.NewServer(
 		mw.ChainUnaryServer(
 			mw.WithErrorHandler(),
@@ -21,15 +21,15 @@ func NewServer(srvc service.Service) app.Server {
 		),
 	)
 
-	proto.RegisterInsuranceServer(s, &server{})
+	proto.RegisterInsuranceServer(s, &grpcServer{})
 
-	return &server{
+	return &grpcServer{
 		grpcServer: s,
 		srvc:       srvc,
 	}
 }
 
-type server struct {
+type grpcServer struct {
 	proto.UnimplementedInsuranceServer
 
 	grpcServer *grpc.Server
@@ -39,7 +39,7 @@ type server struct {
 	conv utils.Converter
 }
 
-func (s server) Serve(port string) error {
+func (s grpcServer) Serve(port string) error {
 	l, err := net.Listen("tcp", port)
 	if err != nil {
 		return err
@@ -52,7 +52,7 @@ func (s server) Serve(port string) error {
 	return nil
 }
 
-func (s server) CreateInsurance(ctx context.Context, insurance *proto.NewInsurance) (*emptypb.Empty, error) {
+func (s grpcServer) CreateInsurance(ctx context.Context, insurance *proto.NewInsurance) (*emptypb.Empty, error) {
 	if err := s.srvc.CreateInsurance(ctx, s.conv.ToInsurance(insurance)); err != nil {
 		return nil, fmt.Errorf("service failed: %w", err)
 	}
@@ -60,7 +60,7 @@ func (s server) CreateInsurance(ctx context.Context, insurance *proto.NewInsuran
 	return &emptypb.Empty{}, nil
 }
 
-func (s server) Payoff(ctx context.Context, payoff *proto.NewPayoff) (*emptypb.Empty, error) {
+func (s grpcServer) Payoff(ctx context.Context, payoff *proto.NewPayoff) (*emptypb.Empty, error) {
 	if err := s.srvc.Payoff(ctx, s.conv.ToPayoff(payoff)); err != nil {
 		return nil, fmt.Errorf("service failed: %w", err)
 	}
