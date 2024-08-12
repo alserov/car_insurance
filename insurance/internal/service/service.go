@@ -8,8 +8,8 @@ import (
 )
 
 type Service interface {
-	CreateInsurance(ctx context.Context, insData models.Insurance, carImage []byte) error
-	Payoff(ctx context.Context, receiverAddr string, carImage []byte) error
+	CreateInsurance(ctx context.Context, insData models.Insurance) error
+	Payoff(ctx context.Context, payoff models.Payoff) error
 }
 
 type Clients struct {
@@ -29,8 +29,8 @@ type service struct {
 	contractCl    clients.ContractClient
 }
 
-func (s service) CreateInsurance(ctx context.Context, insData models.Insurance, carImage []byte) error {
-	if err := s.recognitionCl.CheckIfCarIsOK(ctx, carImage); err != nil {
+func (s service) CreateInsurance(ctx context.Context, insData models.Insurance) error {
+	if err := s.recognitionCl.CheckIfCarIsOK(ctx, insData.CarImage); err != nil {
 		return fmt.Errorf("failed to create insurance: %w", err)
 	}
 
@@ -41,13 +41,13 @@ func (s service) CreateInsurance(ctx context.Context, insData models.Insurance, 
 	return nil
 }
 
-func (s service) Payoff(ctx context.Context, receiverAddr string, carImage []byte) error {
-	mult, err := s.recognitionCl.CalcDamageMultiplier(ctx, carImage)
+func (s service) Payoff(ctx context.Context, payoff models.Payoff) error {
+	mult, err := s.recognitionCl.CalcDamageMultiplier(ctx, payoff.CarImage)
 	if err != nil {
 		return fmt.Errorf("failed to payoff: %w", err)
 	}
 
-	if err = s.contractCl.Payoff(ctx, receiverAddr, mult); err != nil {
+	if err = s.contractCl.Payoff(ctx, payoff.ReceiverAddr, mult); err != nil {
 		return fmt.Errorf("failed to payoff: %w", err)
 	}
 
