@@ -39,6 +39,11 @@ type grpcServer struct {
 	conv utils.Converter
 }
 
+func (s grpcServer) Shutdown() error {
+	s.grpcServer.GracefulStop()
+	return nil
+}
+
 func (s grpcServer) Serve(port string) error {
 	l, err := net.Listen("tcp", port)
 	if err != nil {
@@ -50,6 +55,15 @@ func (s grpcServer) Serve(port string) error {
 	}
 
 	return nil
+}
+
+func (s grpcServer) GetInsuranceData(ctx context.Context, owner *proto.InsuranceOwner) (*proto.InsuranceData, error) {
+	data, err := s.srvc.GetInsuranceData(ctx, owner.Addr)
+	if err != nil {
+		return nil, fmt.Errorf("service failed: %w", err)
+	}
+
+	return s.conv.FromInsuranceData(data), nil
 }
 
 func (s grpcServer) CreateInsurance(ctx context.Context, insurance *proto.NewInsurance) (*emptypb.Empty, error) {

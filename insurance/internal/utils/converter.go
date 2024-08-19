@@ -21,3 +21,14 @@ func (Converter) ToPayoff(in *proto.NewPayoff) models.Payoff {
 		CarImage:     in.CarImage,
 	}
 }
+
+func (Converter) FromInsuranceData(in models.InsuranceData) *proto.InsuranceData {
+	return &proto.InsuranceData{
+		ActiveTill:         in.ActiveTill.String(),
+		Owner:              in.Owner,
+		Price:              in.Price,
+		MaxInsurancePayoff: in.MaxInsurancePayoff,
+		MinInsurancePayoff: in.MinInsurancePayoff,
+		AvgInsurancePayoff: in.AvgInsurancePayoff,
+	}
+}

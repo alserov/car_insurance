@@ -12,5 +12,5 @@ type RecognitionClient interface {
 
 type ContractClient interface {
 	CreateInsurance(ctx context.Context, ins models.Insurance) error
-	Payoff(ctx context.Context, receiverAddr string, mult float32) error
+	Payoff(ctx context.Context, payoff models.Payoff) error
 }

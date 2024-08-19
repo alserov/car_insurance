@@ -6,11 +6,17 @@ type Config struct {
 	Env  string
 	Port string
 
+	Broker Kafka
+
 	Services struct {
 		RecognitionAddr string
 	}
 
-	Broker Kafka
+	Databases struct {
+		Redis struct {
+			Addr string
+		}
+	}
 }
 
 type Kafka struct {

@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.2.0
 // - protoc             v4.24.1
-// source: pkg/gRPC/insurance.proto
+// source: pkg/grpc/insurance.proto
 
 package proto
 
@@ -25,6 +25,7 @@ const _ = grpc.SupportPackageIsVersion7
 type InsuranceClient interface {
 	CreateInsurance(ctx context.Context, in *NewInsurance, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	Payoff(ctx context.Context, in *NewPayoff, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	GetInsuranceData(ctx context.Context, in *InsuranceOwner, opts ...grpc.CallOption) (*InsuranceData, error)
 }
 
 type insuranceClient struct {
@@ -53,12 +54,22 @@ func (c *insuranceClient) Payoff(ctx context.Context, in *NewPayoff, opts ...grp
 	return out, nil
 }
 
+func (c *insuranceClient) GetInsuranceData(ctx context.Context, in *InsuranceOwner, opts ...grpc.CallOption) (*InsuranceData, error) {
+	out := new(InsuranceData)
+	err := c.cc.Invoke(ctx, "/Insurance/GetInsuranceData", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // InsuranceServer is the server API for Insurance service.
 // All implementations must embed UnimplementedInsuranceServer
 // for forward compatibility
 type InsuranceServer interface {
 	CreateInsurance(context.Context, *NewInsurance) (*emptypb.Empty, error)
 	Payoff(context.Context, *NewPayoff) (*emptypb.Empty, error)
+	GetInsuranceData(context.Context, *InsuranceOwner) (*InsuranceData, error)
 	mustEmbedUnimplementedInsuranceServer()
 }
 
@@ -71,6 +82,9 @@ func (UnimplementedInsuranceServer) CreateInsurance(context.Context, *NewInsuran
 }
 func (UnimplementedInsuranceServer) Payoff(context.Context, *NewPayoff) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Payoff not implemented")
+}
+func (UnimplementedInsuranceServer) GetInsuranceData(context.Context, *InsuranceOwner) (*InsuranceData, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetInsuranceData not implemented")
 }
 func (UnimplementedInsuranceServer) mustEmbedUnimplementedInsuranceServer() {}
 
@@ -121,6 +135,24 @@ func _Insurance_Payoff_Handler(srv interface{}, ctx context.Context, dec func(in
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Insurance_GetInsuranceData_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(InsuranceOwner)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(InsuranceServer).GetInsuranceData(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/Insurance/GetInsuranceData",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(InsuranceServer).GetInsuranceData(ctx, req.(*InsuranceOwner))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Insurance_ServiceDesc is the grpc.ServiceDesc for Insurance service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -136,7 +168,11 @@ var Insurance_ServiceDesc = grpc.ServiceDesc{
 			MethodName: "Payoff",
 			Handler:    _Insurance_Payoff_Handler,
 		},
+		{
+			MethodName: "GetInsuranceData",
+			Handler:    _Insurance_GetInsuranceData_Handler,
+		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "pkg/gRPC/insurance.proto",
+	Metadata: "pkg/grpc/insurance.proto",
 }
