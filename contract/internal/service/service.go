@@ -8,7 +8,6 @@ import (
 	"github.com/alserov/car_insurance/contract/internal/utils"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"math/big"
-	"time"
 )
 
 type Service interface {
@@ -29,21 +28,13 @@ type service struct {
 	ethCl *ethclient.Client
 }
 
-const (
-	MonthPeriod    = time.Hour * 24 * 30
-	SixMonthPeriod = MonthPeriod * 6
-	YearPeriod     = MonthPeriod * 12
-)
-
 func (s service) CreateInsurance(ctx context.Context, ins models.NewInsurance) error {
 	auth, err := api.GetAccountAuth(ctx, s.ethCl, ins.Sender)
 	if err != nil {
 		return fmt.Errorf("failed to get account auth: %w", err)
 	}
 
-	activeTill := time.Now().Add(SixMonthPeriod)
-
-	tx, err := s.insAPI.Insure(auth, big.NewInt(ins.Amount), big.NewInt(activeTill.Unix()))
+	tx, err := s.insAPI.Insure(auth, big.NewInt(ins.Amount), big.NewInt(ins.ActiveTill.Unix()))
 	if err != nil {
 		return utils.NewError(err.Error(), utils.Internal)
 	}
