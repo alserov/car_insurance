@@ -3,9 +3,10 @@ package postgres
 import (
 	"github.com/alserov/car_insurance/insurance/internal/db"
 	"github.com/alserov/car_insurance/insurance/internal/service/models"
+	"github.com/jmoiron/sqlx"
 )
 
-func NewRepository() db.Repository {
+func NewRepository(conn *sqlx.DB) db.Repository {
 	return &postgres{}
 }
 

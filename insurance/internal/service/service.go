@@ -2,10 +2,13 @@ package service
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"github.com/alserov/car_insurance/insurance/internal/clients"
 	"github.com/alserov/car_insurance/insurance/internal/db"
 	"github.com/alserov/car_insurance/insurance/internal/service/models"
+	"github.com/alserov/car_insurance/insurance/internal/utils"
+	"github.com/google/uuid"
 	"time"
 )
 
@@ -20,10 +23,12 @@ type Clients struct {
 	Contract    clients.ContractClient
 }
 
-func NewService(cls Clients) Service {
+func NewService(cls Clients, outbox db.Outbox, repo db.Repository) Service {
 	return &service{
 		recognitionCl: cls.Recognition,
 		contractCl:    cls.Contract,
+		outbox:        outbox,
+		repo:          repo,
 	}
 }
 
@@ -49,18 +54,25 @@ func (s service) CreateInsurance(ctx context.Context, insData models.Insurance) 
 		return fmt.Errorf("failed to create insurance: %w", err)
 	}
 
-	if err := s.outbox.Create(ctx, insData.SenderAddr, struct{}{}); err != nil {
+	insData.ActiveTill = time.Now().Add(models.SixMonthPeriod)
+	b, err := json.Marshal(insData)
+	if err != nil {
+		return utils.NewError(err.Error(), utils.BadRequest)
+	}
+
+	itemID := uuid.NewString()
+	itemStatus := models.Pending
+	if err = s.outbox.Create(ctx, models.OutboxItem{
+		ID:      itemID,
+		GroupID: models.GroupInsurance,
+		Status:  itemStatus,
+		Val:     b,
+	}); err != nil {
 		return fmt.Errorf("failed to write into outbox: %w", err)
 	}
 
-	insData.ActiveTill = time.Now().Add(models.SixMonthPeriod)
-
-	if err := s.contractCl.CreateInsurance(ctx, insData); err != nil {
-		return fmt.Errorf("failed to create insurance: %w", err)
-	}
-
-	if err := s.repo.CreateInsuranceData(models.InsuranceData{
-		Status:             models.Pending,
+	if err = s.repo.CreateInsuranceData(models.InsuranceData{
+		Status:             itemStatus,
 		ActiveTill:         insData.ActiveTill,
 		Owner:              insData.SenderAddr,
 		Price:              insData.Amount,
@@ -81,13 +93,20 @@ func (s service) Payoff(ctx context.Context, payoff models.Payoff) error {
 	}
 
 	payoff.Multiplier = mult
-
-	if err = s.outbox.Create(ctx, payoff.ReceiverAddr, struct{}{}); err != nil {
-		return fmt.Errorf("failed to write into outbox: %w", err)
+	b, err := json.Marshal(payoff)
+	if err != nil {
+		return utils.NewError(err.Error(), utils.BadRequest)
 	}
 
-	if err = s.contractCl.Payoff(ctx, payoff); err != nil {
-		return fmt.Errorf("failed to payoff: %w", err)
+	itemID := uuid.NewString()
+	itemStatus := models.Pending
+	if err = s.outbox.Create(ctx, models.OutboxItem{
+		ID:      itemID,
+		GroupID: models.GroupPayoff,
+		Status:  itemStatus,
+		Val:     b,
+	}); err != nil {
+		return fmt.Errorf("failed to write into outbox: %w", err)
 	}
 
 	return nil

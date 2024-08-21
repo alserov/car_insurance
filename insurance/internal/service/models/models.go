@@ -6,6 +6,12 @@ const (
 	Pending = iota
 	Active
 	Payed
+	Canceled
+)
+
+const (
+	GroupInsurance = iota
+	GroupPayoff
 )
 
 const (
@@ -35,4 +41,11 @@ type InsuranceData struct {
 	MaxInsurancePayoff int64     `json:"maxInsurancePayoff"`
 	MinInsurancePayoff int64     `json:"minInsurancePayoff"`
 	AvgInsurancePayoff int64     `json:"avgInsurancePayoff"`
+}
+
+type OutboxItem struct {
+	ID      string
+	GroupID int
+	Status  int
+	Val     any
 }

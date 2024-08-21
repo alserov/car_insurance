@@ -13,7 +13,10 @@ type Config struct {
 	}
 
 	Databases struct {
-		Redis struct {
+		Mongo struct {
+			Addr string
+		}
+		Postgres struct {
 			Addr string
 		}
 	}
