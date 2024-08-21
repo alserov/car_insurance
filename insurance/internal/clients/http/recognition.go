@@ -27,6 +27,9 @@ func (r recognition) CheckIfCarIsOK(ctx context.Context, image []byte) error {
 
 func (r recognition) CalcDamageMultiplier(ctx context.Context, image []byte) (float32, error) {
 	body, err := r.makeRequest(http.MethodGet, bytes.NewReader(image))
+	if err != nil {
+		return 0, utils.NewError(err.Error(), utils.Internal)
+	}
 
 	var mult float32
 

@@ -1,53 +1,49 @@
 package mongo
 
 import (
-	"github.com/alserov/car_insurance/insurance/internal/db"
-	"github.com/alserov/car_insurance/insurance/internal/service/models"
-	"github.com/stretchr/testify/suite"
 	"testing"
-	"time"
 )
 
 func TestIntegration(t *testing.T) {
-	suite.Run(t, new(mongoRepoIntegrationSuite))
+	//suite.Run(t, new(mongoRepoIntegrationSuite))
 }
 
-type mongoRepoIntegrationSuite struct {
-	suite.Suite
+//type mongoRepoIntegrationSuite struct {
+//	suite.Suite
+//
+//	insuranceValues []models.Insurance
+//
+//	repo db.Repository
+//}
+//
+//func (s *mongoRepoIntegrationSuite) SetupTest() {
+//	s.insuranceValues = []models.Insurance{
+//		{
+//			SenderAddr: "x01",
+//			Amount:     100,
+//			ActiveTill: time.Now().Add(time.Hour),
+//		},
+//		{
+//			SenderAddr: "x02",
+//			Amount:     100,
+//			ActiveTill: time.Now().Add(time.Hour * 2),
+//		},
+//	}
+//
+//  conn := MustConnect("localhost:")
+//}
 
-	insuranceValues []models.Insurance
-
-	repo db.Repository
-}
-
-func (s *mongoRepoIntegrationSuite) SetupTest() {
-	s.insuranceValues = []models.Insurance{
-		{
-			SenderAddr: "x01",
-			Amount:     100,
-			ActiveTill: time.Now().Add(time.Hour),
-		},
-		{
-			SenderAddr: "x02",
-			Amount:     100,
-			ActiveTill: time.Now().Add(time.Hour * 2),
-		},
-	}
-
-	//conn := MustConnect("localhost:")
-}
-
-func (s *mongoRepoIntegrationSuite) TestCreate(t *testing.T) {
-
-}
-
-func (s *mongoRepoIntegrationSuite) TestGet(t *testing.T) {
-
-}
-
-func (s *mongoRepoIntegrationSuite) TestDelete(t *testing.T) {
-
-}
+//func (s *mongoRepoIntegrationSuite) TestCreate(t *testing.T) {
+//
+//}
+//
+//func (s *mongoRepoIntegrationSuite) TestGet(t *testing.T) {
+//
+//}
+//
+//func (s *mongoRepoIntegrationSuite) TestDelete(t *testing.T) {
+//
+//}
 
 //func (s *mongoRepoIntegrationSuite) newMongoInstance() testcontainers.Container {
 //	container, err := testcontainers.GenericContainer(context.Background(), testcontainers.GenericContainerRequest{

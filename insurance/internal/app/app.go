@@ -28,10 +28,14 @@ func MustStart(cfg *config.Config) {
 
 	// db (connections to all DBs)
 	mongoConn := mongo.MustConnect(cfg.Databases.Mongo.Addr)
-	defer mongoConn.Disconnect(context.Background())
+	defer func() {
+		_ = mongoConn.Disconnect(context.Background())
+	}()
 
 	postgresConn := postgres.MustConnect(cfg.Databases.Postgres.Addr)
-	defer postgresConn.Close()
+	defer func() {
+		_ = postgresConn.Close()
+	}()
 
 	// repositories (initializing repos from db connections)
 	repo := postgres.NewRepository(postgresConn)
@@ -42,7 +46,9 @@ func MustStart(cfg *config.Config) {
 
 	// *async* clients (initializing clients which use message queues/brokers)
 	contractProducer := async.NewProducer(async.Kafka, cfg.Broker.Addr, cfg.Broker.Topics.NewInsurance)
-	defer contractProducer.Close()
+	defer func() {
+		_ = contractProducer.Close()
+	}()
 
 	contractClient := async_cl.NewContractClient(contractProducer)
 

@@ -46,25 +46,28 @@ func (o outbox) processPendingInsuranceItems(ctx context.Context) {
 	for {
 		select {
 		case <-tick.C:
-			jobCtx, _ := context.WithTimeout(context.Background(), time.Second)
+			func() {
+				jobCtx, cancel := context.WithTimeout(context.Background(), time.Second)
+				defer cancel()
 
-			items, err := o.repo.Get(jobCtx, models.Pending, models.GroupInsurance)
-			if err != nil {
-				o.log.Error("failed to get pending items from outbox", logger.WithArg("error", err.Error()))
-				continue
-			}
-
-			for _, val := range items {
-				item, ok := val.Val.(models.Insurance)
-				if !ok {
-					continue
+				items, err := o.repo.Get(jobCtx, models.Pending, models.GroupInsurance)
+				if err != nil {
+					o.log.Error("failed to get pending items from outbox", logger.WithArg("error", err.Error()))
+					return
 				}
 
-				if err = o.contractCl.CreateInsurance(jobCtx, item); err != nil {
-					o.log.Error("client failed to create insurance", logger.WithArg("error", err.Error()))
-					continue
+				for _, val := range items {
+					item, ok := val.Val.(models.Insurance)
+					if !ok {
+						continue
+					}
+
+					if err = o.contractCl.CreateInsurance(jobCtx, item); err != nil {
+						o.log.Error("client failed to create insurance", logger.WithArg("error", err.Error()))
+						continue
+					}
 				}
-			}
+			}()
 		case <-ctx.Done():
 			return
 		}
@@ -80,25 +83,28 @@ func (o outbox) processPendingPayoffItems(ctx context.Context) {
 	for {
 		select {
 		case <-tick.C:
-			jobCtx, _ := context.WithTimeout(context.Background(), time.Second)
+			func() {
+				jobCtx, cancel := context.WithTimeout(context.Background(), time.Second)
+				defer cancel()
 
-			items, err := o.repo.Get(jobCtx, models.Pending, models.GroupPayoff)
-			if err != nil {
-				o.log.Error("failed to get pending items from outbox", logger.WithArg("error", err.Error()))
-				continue
-			}
-
-			for _, val := range items {
-				item, ok := val.Val.(models.Payoff)
-				if !ok {
-					continue
+				items, err := o.repo.Get(jobCtx, models.Pending, models.GroupPayoff)
+				if err != nil {
+					o.log.Error("failed to get pending items from outbox", logger.WithArg("error", err.Error()))
+					return
 				}
 
-				if err = o.contractCl.Payoff(jobCtx, item); err != nil {
-					o.log.Error("client failed to payoff", logger.WithArg("error", err.Error()))
-					continue
+				for _, val := range items {
+					item, ok := val.Val.(models.Payoff)
+					if !ok {
+						continue
+					}
+
+					if err = o.contractCl.Payoff(jobCtx, item); err != nil {
+						o.log.Error("client failed to payoff", logger.WithArg("error", err.Error()))
+						continue
+					}
 				}
-			}
+			}()
 		case <-ctx.Done():
 			return
 		}
