@@ -46,7 +46,7 @@ func MustStart(cfg *config.Config) {
 
 	contractClient := async_cl.NewContractClient(contractProducer)
 
-	// outbox worker (initializing outbox worker, that will interact with other services)
+	// workers (initializing workers)
 	outboxWorker := utils.NewOutboxWorker(outboxRepo, contractClient, log)
 
 	// service (initializing service)
