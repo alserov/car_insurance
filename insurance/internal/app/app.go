@@ -12,7 +12,7 @@ import (
 	"github.com/alserov/car_insurance/insurance/internal/server"
 	"github.com/alserov/car_insurance/insurance/internal/server/grpc"
 	"github.com/alserov/car_insurance/insurance/internal/service"
-	"github.com/alserov/car_insurance/insurance/internal/utils"
+	"github.com/alserov/car_insurance/insurance/internal/workers"
 	"os/signal"
 	"syscall"
 )
@@ -47,7 +47,7 @@ func MustStart(cfg *config.Config) {
 	contractClient := async_cl.NewContractClient(contractProducer)
 
 	// workers (initializing workers)
-	outboxWorker := utils.NewOutboxWorker(outboxRepo, contractClient, log)
+	outboxWorker := workers.NewOutboxWorker(outboxRepo, contractClient, log)
 
 	// service (initializing service)
 	srvc := service.NewService(service.Clients{
