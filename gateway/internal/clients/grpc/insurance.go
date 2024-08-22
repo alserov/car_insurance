@@ -23,7 +23,7 @@ func (i insurance) Payoff(ctx context.Context, payoff models.Payoff) error {
 	panic("implement me")
 }
 
-func (i insurance) GetInsuranceData(ctx context.Context) (models.InsuranceData, error) {
+func (i insurance) GetInsuranceData(ctx context.Context, addr string) (models.InsuranceData, error) {
 	//TODO implement me
 	panic("implement me")
 }

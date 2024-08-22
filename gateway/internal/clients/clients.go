@@ -8,5 +8,5 @@ import (
 type InsuranceClient interface {
 	CreateInsurance(ctx context.Context, insurance models.Insurance) error
 	Payoff(ctx context.Context, payoff models.Payoff) error
-	GetInsuranceData(ctx context.Context) (models.InsuranceData, error)
+	GetInsuranceData(ctx context.Context, addr string) (models.InsuranceData, error)
 }

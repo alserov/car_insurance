@@ -13,23 +13,15 @@ func newHandler(srvc *service.Service) *handler {
 		insurance: insurance{
 			service: srvc.Insurance,
 		},
-		payments: payments{
-			service: srvc.Payments,
-		},
 	}
 }
 
 type handler struct {
 	insurance insurance
-	payments  payments
 }
 
 type insurance struct {
 	service service.Insurance
-}
-
-type payments struct {
-	service service.Payments
 }
 
 func (i insurance) CreateInsurance(c *fiber.Ctx) error {
@@ -59,13 +51,13 @@ func (i insurance) GetInsuranceData(c *fiber.Ctx) error {
 	return nil
 }
 
-func (p payments) Payoff(c *fiber.Ctx) error {
+func (i insurance) Payoff(c *fiber.Ctx) error {
 	var pay models.Payoff
 	if err := c.BodyParser(&pay); err != nil {
 		return utils.NewError(err.Error(), utils.BadRequest)
 	}
 
-	err := p.service.Payoff(c.Context(), pay)
+	err := i.service.Payoff(c.Context(), pay)
 	if err != nil {
 		return fmt.Errorf("failed to payoff: %w", err)
 	}
