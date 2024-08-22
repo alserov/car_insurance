@@ -51,6 +51,8 @@ func newZap(env string) Logger {
 		l, err = zap.NewDevelopment()
 	case Prod:
 		l, err = zap.NewProduction()
+	default:
+		panic("invalid env")
 	}
 
 	if err != nil {

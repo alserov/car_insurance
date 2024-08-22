@@ -2,6 +2,9 @@ package utils
 
 import (
 	"errors"
+	"fmt"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	"net/http"
 )
 
@@ -38,4 +41,21 @@ func FromError(in error) (string, int) {
 	default:
 		panic("unknown error: " + in.Error())
 	}
+}
+
+func FromGRPCError(in error) error {
+	res, ok := status.FromError(in)
+	if !ok {
+		return NewError("failed to get error from grpc error", Internal)
+	}
+
+	switch res.Code() {
+	case codes.Internal:
+		return NewError(res.Message(), Internal)
+	case codes.InvalidArgument:
+		return NewError(res.Message(), BadRequest)
+	default:
+		return NewError(fmt.Sprintf("unknown status: %s", res.Message()), Internal)
+	}
+
 }

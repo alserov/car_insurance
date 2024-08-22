@@ -1,26 +1,22 @@
 package models
 
-import "time"
-
 type Insurance struct {
-	SenderAddr string    `json:"senderAddr"`
-	Amount     int64     `json:"amount"`
-	CarImage   []byte    `json:"carImage"`
-	ActiveTill time.Time `json:"activeTill"`
+	SenderAddr string `json:"senderAddr"`
+	Amount     int64  `json:"amount"`
+	CarImage   []byte `json:"carImage"`
 }
 
 type Payoff struct {
-	CarImage     []byte  `json:"carImage"`
-	ReceiverAddr string  `json:"receiverAddr"`
-	Multiplier   float32 `json:"multiplier"`
+	CarImage     []byte `json:"carImage"`
+	ReceiverAddr string `json:"receiverAddr"`
 }
 
 type InsuranceData struct {
-	Status             int       `json:"status"`
-	ActiveTill         time.Time `json:"activeTill"`
-	Owner              string    `json:"owner"`
-	Price              int64     `json:"price"`
-	MaxInsurancePayoff int64     `json:"maxInsurancePayoff"`
-	MinInsurancePayoff int64     `json:"minInsurancePayoff"`
-	AvgInsurancePayoff int64     `json:"avgInsurancePayoff"`
+	Status             int    `json:"status"`
+	ActiveTill         string `json:"activeTill"`
+	Owner              string `json:"owner"`
+	Price              int64  `json:"price"`
+	MaxInsurancePayoff int64  `json:"maxInsurancePayoff"`
+	MinInsurancePayoff int64  `json:"minInsurancePayoff"`
+	AvgInsurancePayoff int64  `json:"avgInsurancePayoff"`
 }

@@ -23,9 +23,15 @@ func WithArg(key string, val any) Arg {
 	}
 }
 
-func WrapLogger(ctx context.Context, l Logger) context.Context {
-	return context.WithValue(ctx, CtxContextKey, l)
+func WrapLogger(ctx context.Context, log Logger) context.Context {
+	return context.WithValue(ctx, CtxContextKey, log)
 }
+
+type ContextKey string
+
+const (
+	CtxContextKey ContextKey = "logger"
+)
 
 func ExtractLogger(ctx context.Context) Logger {
 	l, ok := ctx.Value(CtxContextKey).(Logger)
@@ -35,12 +41,6 @@ func ExtractLogger(ctx context.Context) Logger {
 
 	return l
 }
-
-type ContextKey string
-
-const (
-	CtxContextKey ContextKey = "logger"
-)
 
 const (
 	Zap = iota
