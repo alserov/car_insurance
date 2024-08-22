@@ -3,6 +3,7 @@ package grpc
 import (
 	"context"
 	"fmt"
+	"github.com/alserov/car_insurance/insurance/internal/logger"
 	mw "github.com/alserov/car_insurance/insurance/internal/middleware/grpc"
 	"github.com/alserov/car_insurance/insurance/internal/server"
 	"github.com/alserov/car_insurance/insurance/internal/service"
@@ -13,11 +14,12 @@ import (
 	"net"
 )
 
-func NewServer(srvc service.Service) server.Server {
+func NewServer(srvc service.Service, log logger.Logger) server.Server {
 	s := grpc.NewServer(
 		mw.ChainUnaryServer(
 			mw.WithErrorHandler(),
 			mw.WithRecovery(),
+			mw.WithLogger(log),
 		),
 	)
 

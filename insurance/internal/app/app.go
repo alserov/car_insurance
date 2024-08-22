@@ -15,6 +15,8 @@ import (
 	"github.com/alserov/car_insurance/insurance/internal/workers"
 	"os/signal"
 	"syscall"
+
+	_ "github.com/joho/godotenv/autoload"
 )
 
 func MustStart(cfg *config.Config) {
@@ -52,17 +54,19 @@ func MustStart(cfg *config.Config) {
 
 	contractClient := async_cl.NewContractClient(contractProducer)
 
+	cls := service.Clients{
+		Recognition: recognitionClient,
+		Contract:    contractClient,
+	}
+
 	// workers (initializing workers)
 	outboxWorker := workers.NewOutboxWorker(outboxRepo, contractClient, log)
 
 	// service (initializing service)
-	srvc := service.NewService(service.Clients{
-		Recognition: recognitionClient,
-		Contract:    contractClient,
-	}, outboxRepo, repo)
+	srvc := service.NewService(cls, outboxRepo, repo)
 
 	// server (initializing server)
-	srvr := grpc.NewServer(srvc)
+	srvr := grpc.NewServer(srvc, log)
 
 	// starting server and workers
 	log.Info("server is running")
