@@ -8,8 +8,6 @@ import (
 	"github.com/stretchr/testify/suite"
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/wait"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"testing"
 	"time"
@@ -44,12 +42,12 @@ func (s *mongoRepoIntegrationSuite) SetupTest() {
 		{
 			SenderAddr: "x01",
 			Amount:     100,
-			ActiveTill: time.Now().Add(time.Hour),
+			ActiveTill: time.Date(2025, 1, 1, 0, 0, 0, 0, time.UTC),
 		},
 		{
 			SenderAddr: "x02",
 			Amount:     100,
-			ActiveTill: time.Now().Add(time.Hour * 2),
+			ActiveTill: time.Date(2025, 2, 1, 0, 0, 0, 0, time.UTC),
 		},
 	}
 
@@ -88,19 +86,7 @@ func (s *mongoRepoIntegrationSuite) TestGet() {
 	s.Require().NotEmpty(vals[0].ID)
 	s.Require().Equal(models.GroupInsurance, vals[0].GroupID)
 	s.Require().Equal(models.Pending, vals[0].Status)
-
-	b, err := bson.Marshal(vals[0].Val.(bson.D))
-	s.Require().NoError(err)
-
-	var itemVal bson.M
-	err = bson.Unmarshal(b, &itemVal)
-	s.Require().NoError(err)
-
-	vals[0].Val = itemVal
-
-	s.Require().Equal(s.insuranceValues[0].SenderAddr, vals[0].Val.(bson.M)["senderAddr"])
-	s.Require().Equal(s.insuranceValues[0].Amount, vals[0].Val.(bson.M)["amount"])
-	s.Require().Equal(s.insuranceValues[0].ActiveTill.Format("2006-01-02"), vals[0].Val.(bson.M)["activeTill"].(primitive.DateTime).Time().Format("2006-01-02"))
+	s.Require().Equal(s.insuranceValues[0], vals[0].Val.(models.Insurance))
 }
 
 func (s *mongoRepoIntegrationSuite) TestDelete() {

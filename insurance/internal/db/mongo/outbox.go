@@ -45,9 +45,34 @@ func (o outbox) Get(ctx context.Context, status int, groupID int) ([]models.Outb
 
 	var items []models.OutboxItem
 	for curs.Next(ctx) {
-		var item models.OutboxItem
+		var (
+			item models.OutboxItem
+			b    []byte
+		)
 		if err = curs.Decode(&item); err != nil {
 			return nil, utils.NewError(err.Error(), utils.Internal)
+		}
+
+		b, err = bson.Marshal(item.Val.(bson.D))
+		if err != nil {
+			return nil, utils.NewError(err.Error(), utils.Internal)
+		}
+
+		switch item.GroupID {
+		case models.GroupInsurance:
+			var insurance models.Insurance
+			if err = bson.Unmarshal(b, &insurance); err != nil {
+				return nil, utils.NewError(err.Error(), utils.Internal)
+			}
+
+			item.Val = insurance
+		case models.GroupPayoff:
+			var payoff models.Payoff
+			if err = bson.Unmarshal(b, &payoff); err != nil {
+				return nil, utils.NewError(err.Error(), utils.Internal)
+			}
+
+			item.Val = payoff
 		}
 
 		items = append(items, item)
