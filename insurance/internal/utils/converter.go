@@ -25,7 +25,7 @@ func (Converter) ToPayoff(in *proto.NewPayoff) models.Payoff {
 func (Converter) FromInsuranceData(in models.InsuranceData) *proto.InsuranceData {
 	return &proto.InsuranceData{
 		ActiveTill:         in.ActiveTill.String(),
-		Owner:              in.Owner,
+		Owner:              in.ID,
 		Price:              in.Price,
 		MaxInsurancePayoff: in.MaxInsurancePayoff,
 		MinInsurancePayoff: in.MinInsurancePayoff,

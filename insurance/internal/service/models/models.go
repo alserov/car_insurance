@@ -20,11 +20,17 @@ const (
 	YearPeriod     = MonthPeriod * 12
 )
 
+type ContractCommit struct {
+	Group  uint
+	Addr   string
+	Status uint
+}
+
 type Insurance struct {
-	SenderAddr string    `json:"senderAddr"`
-	Amount     int64     `json:"amount"`
-	CarImage   []byte    `json:"carImage"`
-	ActiveTill time.Time `json:"activeTill"`
+	SenderAddr string    `json:"senderAddr" bson:"senderAddr"`
+	Amount     int64     `json:"amount" bson:"amount"`
+	CarImage   []byte    `json:"carImage" bson:"-"`
+	ActiveTill time.Time `json:"activeTill" bson:"activeTill"`
 }
 
 type Payoff struct {
@@ -34,9 +40,9 @@ type Payoff struct {
 }
 
 type InsuranceData struct {
+	ID                 string    `json:"id"`
 	Status             int       `json:"status"`
 	ActiveTill         time.Time `json:"activeTill"`
-	Owner              string    `json:"owner"`
 	Price              int64     `json:"price"`
 	MaxInsurancePayoff int64     `json:"maxInsurancePayoff"`
 	MinInsurancePayoff int64     `json:"minInsurancePayoff"`
@@ -44,8 +50,8 @@ type InsuranceData struct {
 }
 
 type OutboxItem struct {
-	ID      string
-	GroupID int
-	Status  int
-	Val     any
+	ID      string `bson:"id"`
+	GroupID int    `bson:"groupID"`
+	Status  int    `bson:"status"`
+	Val     any    `bson:"val"`
 }

@@ -12,6 +12,7 @@ import (
 	"github.com/alserov/car_insurance/insurance/internal/server"
 	"github.com/alserov/car_insurance/insurance/internal/server/grpc"
 	"github.com/alserov/car_insurance/insurance/internal/service"
+	"github.com/alserov/car_insurance/insurance/internal/service/models"
 	"github.com/alserov/car_insurance/insurance/internal/workers"
 	"os/signal"
 	"syscall"
@@ -52,15 +53,21 @@ func MustStart(cfg *config.Config) {
 		_ = contractProducer.Close()
 	}()
 
-	contractClient := async_cl.NewContractClient(contractProducer)
+	contractConsumer := async.NewConsumer[models.ContractCommit](async.Kafka, cfg.Broker.Addr, cfg.Broker.Topics.Commit)
+	defer func() {
+		_ = contractConsumer.Close()
+	}()
+
+	contractClient := async_cl.NewContractClient(contractProducer, contractConsumer)
 
 	cls := service.Clients{
 		Recognition: recognitionClient,
 		Contract:    contractClient,
 	}
 
-	// workers (initializing workers)
-	outboxWorker := workers.NewOutboxWorker(outboxRepo, contractClient, log)
+	// starting workers
+	workers.NewOutboxWorker(outboxRepo, contractClient, log).Start(ctx)
+	workers.NewContractWorker(outboxRepo, repo, contractClient, log).Start(ctx)
 
 	// service (initializing service)
 	srvc := service.NewService(cls, outboxRepo, repo)
@@ -68,10 +75,9 @@ func MustStart(cfg *config.Config) {
 	// server (initializing server)
 	srvr := grpc.NewServer(srvc, log)
 
-	// starting server and workers
+	// starting server
 	log.Info("server is running")
 
-	outboxWorker.Start(ctx)
 	server.MustServe(ctx, srvr, cfg.Port)
 
 	log.Info("server stopped")

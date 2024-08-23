@@ -2,12 +2,10 @@ package service
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"github.com/alserov/car_insurance/insurance/internal/clients"
 	"github.com/alserov/car_insurance/insurance/internal/db"
 	"github.com/alserov/car_insurance/insurance/internal/service/models"
-	"github.com/alserov/car_insurance/insurance/internal/utils"
 	"github.com/google/uuid"
 	"time"
 )
@@ -41,7 +39,7 @@ type service struct {
 }
 
 func (s service) GetInsuranceData(ctx context.Context, ownerAddr string) (models.InsuranceData, error) {
-	data, err := s.repo.GetInsuranceData(ownerAddr)
+	data, err := s.repo.GetInsuranceData(ctx, ownerAddr)
 	if err != nil {
 		return models.InsuranceData{}, fmt.Errorf("failed to get insurance data: %w", err)
 	}
@@ -55,26 +53,22 @@ func (s service) CreateInsurance(ctx context.Context, insData models.Insurance) 
 	}
 
 	insData.ActiveTill = time.Now().Add(models.SixMonthPeriod)
-	b, err := json.Marshal(insData)
-	if err != nil {
-		return utils.NewError(err.Error(), utils.BadRequest)
-	}
 
 	itemID := uuid.NewString()
 	itemStatus := models.Pending
-	if err = s.outbox.Create(ctx, models.OutboxItem{
+	if err := s.outbox.Create(ctx, models.OutboxItem{
 		ID:      itemID,
 		GroupID: models.GroupInsurance,
 		Status:  itemStatus,
-		Val:     b,
+		Val:     insData,
 	}); err != nil {
 		return fmt.Errorf("failed to write into outbox: %w", err)
 	}
 
-	if err = s.repo.CreateInsuranceData(models.InsuranceData{
+	if err := s.repo.CreateInsuranceData(ctx, models.InsuranceData{
 		Status:             itemStatus,
 		ActiveTill:         insData.ActiveTill,
-		Owner:              insData.SenderAddr,
+		ID:                 insData.SenderAddr,
 		Price:              insData.Amount,
 		MaxInsurancePayoff: int64(float64(insData.Amount) * 1.99),
 		MinInsurancePayoff: int64(float64(insData.Amount) * 1.5),
@@ -93,10 +87,6 @@ func (s service) Payoff(ctx context.Context, payoff models.Payoff) error {
 	}
 
 	payoff.Multiplier = mult
-	b, err := json.Marshal(payoff)
-	if err != nil {
-		return utils.NewError(err.Error(), utils.BadRequest)
-	}
 
 	itemID := uuid.NewString()
 	itemStatus := models.Pending
@@ -104,7 +94,7 @@ func (s service) Payoff(ctx context.Context, payoff models.Payoff) error {
 		ID:      itemID,
 		GroupID: models.GroupPayoff,
 		Status:  itemStatus,
-		Val:     b,
+		Val:     payoff,
 	}); err != nil {
 		return fmt.Errorf("failed to write into outbox: %w", err)
 	}

@@ -50,6 +50,8 @@ func (o outbox) processPendingInsuranceItems(ctx context.Context) {
 				jobCtx, cancel := context.WithTimeout(context.Background(), time.Second)
 				defer cancel()
 
+				jobCtx = logger.WrapLogger(jobCtx, o.log)
+
 				items, err := o.repo.Get(jobCtx, models.Pending, models.GroupInsurance)
 				if err != nil {
 					o.log.Error("failed to get pending items from outbox", logger.WithArg("error", err.Error()))

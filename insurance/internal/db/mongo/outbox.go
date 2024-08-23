@@ -36,7 +36,7 @@ func (o outbox) Create(ctx context.Context, item models.OutboxItem) error {
 }
 
 func (o outbox) Get(ctx context.Context, status int, groupID int) ([]models.OutboxItem, error) {
-	filter := bson.M{"groupID": groupID, "status": status}
+	filter := bson.D{{Key: "groupID", Value: groupID}, {Key: "status", Value: status}}
 
 	curs, err := o.db.Find(ctx, filter)
 	if err != nil {
@@ -44,15 +44,20 @@ func (o outbox) Get(ctx context.Context, status int, groupID int) ([]models.Outb
 	}
 
 	var items []models.OutboxItem
-	if err = curs.All(ctx, &items); err != nil {
-		return nil, utils.NewError(err.Error(), utils.Internal)
+	for curs.Next(ctx) {
+		var item models.OutboxItem
+		if err = curs.Decode(&item); err != nil {
+			return nil, utils.NewError(err.Error(), utils.Internal)
+		}
+
+		items = append(items, item)
 	}
 
 	return items, nil
 }
 
-func (o outbox) Delete(ctx context.Context, status int, groupID int) error {
-	filter := bson.M{"groupID": groupID, "status": status}
+func (o outbox) Delete(ctx context.Context, id string, groupID int) error {
+	filter := bson.M{"groupID": groupID, "id": id}
 
 	_, err := o.db.DeleteMany(ctx, filter)
 	if err != nil {

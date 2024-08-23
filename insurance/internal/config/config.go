@@ -27,6 +27,7 @@ type Kafka struct {
 	Topics struct {
 		Payoff       string
 		NewInsurance string
+		Commit       string
 	}
 }
 
