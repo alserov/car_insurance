@@ -53,7 +53,7 @@ func MustStart(cfg *config.Config) {
 		_ = contractProducer.Close()
 	}()
 
-	contractConsumer := async.NewConsumer[models.ContractCommit](async.Kafka, cfg.Broker.Addr, cfg.Broker.Topics.Commit)
+	contractConsumer := async.NewConsumer[models.OutboxItem](async.Kafka, cfg.Broker.Addr, cfg.Broker.Topics.Commit)
 	defer func() {
 		_ = contractConsumer.Close()
 	}()
@@ -61,16 +61,16 @@ func MustStart(cfg *config.Config) {
 	contractClient := async_cl.NewContractClient(contractProducer, contractConsumer)
 
 	cls := service.Clients{
-		Recognition: recognitionClient,
-		Contract:    contractClient,
+		Recognition:    recognitionClient,
+		ContractClient: contractClient,
 	}
-
-	// starting workers
-	workers.NewOutboxWorker(outboxRepo, contractClient, log).Start(ctx)
-	workers.NewContractWorker(outboxRepo, repo, contractClient, log).Start(ctx)
 
 	// service (initializing service)
 	srvc := service.NewService(cls, outboxRepo, repo)
+
+	// starting workers
+	workers.NewOutboxWorker(srvc, cls, log).Start(ctx)
+	workers.NewContractWorker(srvc, cls, log).Start(ctx)
 
 	// server (initializing server)
 	srvr := grpc.NewServer(srvc, log)

@@ -3,32 +3,28 @@ package workers
 import (
 	"context"
 	"github.com/alserov/car_insurance/insurance/internal/clients"
-	"github.com/alserov/car_insurance/insurance/internal/db"
 	"github.com/alserov/car_insurance/insurance/internal/logger"
-	"github.com/alserov/car_insurance/insurance/internal/service/models"
+	"github.com/alserov/car_insurance/insurance/internal/service"
 	"time"
 )
-
-type Outbox interface {
-	Start(ctx context.Context)
-}
 
 const (
 	outboxTickPeriod = time.Second * 60 * 30
 )
 
 type outbox struct {
-	repo       db.Outbox
 	contractCl clients.ContractClient
+
+	srvc service.Service
 
 	log logger.Logger
 }
 
-func NewOutboxWorker(repo db.Outbox, contractCl clients.ContractClient, log logger.Logger) *outbox {
+func NewOutboxWorker(srvc service.Service, cls service.Clients, log logger.Logger) *outbox {
 	return &outbox{
-		repo:       repo,
-		contractCl: contractCl,
 		log:        log,
+		srvc:       srvc,
+		contractCl: cls.ContractClient,
 	}
 }
 
@@ -52,22 +48,8 @@ func (o outbox) processPendingInsuranceItems(ctx context.Context) {
 
 				jobCtx = logger.WrapLogger(jobCtx, o.log)
 
-				items, err := o.repo.Get(jobCtx, models.Pending, models.GroupInsurance)
-				if err != nil {
-					o.log.Error("failed to get pending items from outbox", logger.WithArg("error", err.Error()))
-					return
-				}
-
-				for _, val := range items {
-					item, ok := val.Val.(models.Insurance)
-					if !ok {
-						continue
-					}
-
-					if err = o.contractCl.CreateInsurance(jobCtx, item); err != nil {
-						o.log.Error("client failed to create insurance", logger.WithArg("error", err.Error()))
-						continue
-					}
+				if err := o.srvc.ProducePendingInsuranceItems(jobCtx); err != nil {
+					o.log.Error("failed to produce new insurances", logger.WithArg("error", err.Error()))
 				}
 			}()
 		case <-ctx.Done():
@@ -89,22 +71,10 @@ func (o outbox) processPendingPayoffItems(ctx context.Context) {
 				jobCtx, cancel := context.WithTimeout(context.Background(), time.Second)
 				defer cancel()
 
-				items, err := o.repo.Get(jobCtx, models.Pending, models.GroupPayoff)
-				if err != nil {
-					o.log.Error("failed to get pending items from outbox", logger.WithArg("error", err.Error()))
-					return
-				}
+				jobCtx = logger.WrapLogger(jobCtx, o.log)
 
-				for _, val := range items {
-					item, ok := val.Val.(models.Payoff)
-					if !ok {
-						continue
-					}
-
-					if err = o.contractCl.Payoff(jobCtx, item); err != nil {
-						o.log.Error("client failed to payoff", logger.WithArg("error", err.Error()))
-						continue
-					}
+				if err := o.srvc.ProducePendingInsuranceItems(jobCtx); err != nil {
+					o.log.Error("failed to produce new insurances", logger.WithArg("error", err.Error()))
 				}
 			}()
 		case <-ctx.Done():

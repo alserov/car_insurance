@@ -8,20 +8,20 @@ import (
 	"github.com/alserov/car_insurance/insurance/internal/service/models"
 )
 
-func NewContractClient(p async.Producer, c async.Consumer[models.ContractCommit]) clients.ContractClient {
+func NewContractClient(p async.Producer, insuranceStatusCons async.Consumer[models.OutboxItem]) clients.ContractClient {
 	return &contract{
-		p: p,
-		c: c,
+		p:                   p,
+		insuranceStatusCons: insuranceStatusCons,
 	}
 }
 
 type contract struct {
-	p async.Producer
-	c async.Consumer[models.ContractCommit]
+	p                   async.Producer
+	insuranceStatusCons async.Consumer[models.OutboxItem]
 }
 
-func (c contract) GetCommits(ctx context.Context) chan models.ContractCommit {
-	return c.c.Consume(ctx)
+func (c contract) GetCommits(ctx context.Context) chan models.OutboxItem {
+	return c.insuranceStatusCons.Consume(ctx)
 }
 
 func (c contract) CreateInsurance(ctx context.Context, ins models.Insurance) error {

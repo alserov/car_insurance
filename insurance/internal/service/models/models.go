@@ -20,13 +20,8 @@ const (
 	YearPeriod     = MonthPeriod * 12
 )
 
-type ContractCommit struct {
-	Group  uint
-	Addr   string
-	Status uint
-}
-
 type Insurance struct {
+	ID         string    `json:"id" bson:"id"`
 	SenderAddr string    `json:"senderAddr" bson:"senderAddr"`
 	Amount     int64     `json:"amount" bson:"amount"`
 	CarImage   []byte    `json:"carImage" bson:"-"`

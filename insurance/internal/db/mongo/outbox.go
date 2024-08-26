@@ -81,8 +81,8 @@ func (o outbox) Get(ctx context.Context, status int, groupID int) ([]models.Outb
 	return items, nil
 }
 
-func (o outbox) Delete(ctx context.Context, id string, groupID int) error {
-	filter := bson.M{"groupID": groupID, "id": id}
+func (o outbox) Delete(ctx context.Context, id string) error {
+	filter := bson.M{"id": id}
 
 	_, err := o.db.DeleteMany(ctx, filter)
 	if err != nil {

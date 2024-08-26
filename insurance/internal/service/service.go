@@ -14,17 +14,20 @@ type Service interface {
 	CreateInsurance(ctx context.Context, insData models.Insurance) error
 	Payoff(ctx context.Context, payoff models.Payoff) error
 	GetInsuranceData(ctx context.Context, ownerAddr string) (models.InsuranceData, error)
+	UpdateInsuranceStatus(ctx context.Context, id string) error
+	ProducePendingInsuranceItems(ctx context.Context) error
+	ProducePendingPayoffItems(ctx context.Context) error
 }
 
 type Clients struct {
-	Recognition clients.RecognitionClient
-	Contract    clients.ContractClient
+	Recognition    clients.RecognitionClient
+	ContractClient clients.ContractClient
 }
 
 func NewService(cls Clients, outbox db.Outbox, repo db.Repository) Service {
 	return &service{
 		recognitionCl: cls.Recognition,
-		contractCl:    cls.Contract,
+		contractCl:    cls.ContractClient,
 		outbox:        outbox,
 		repo:          repo,
 	}
@@ -36,6 +39,58 @@ type service struct {
 
 	repo   db.Repository
 	outbox db.Outbox
+}
+
+func (s service) ProducePendingInsuranceItems(ctx context.Context) error {
+	items, err := s.outbox.Get(ctx, models.Pending, models.GroupInsurance)
+	if err != nil {
+		return fmt.Errorf("failed to get items from outbox: %w", err)
+	}
+
+	for _, val := range items {
+		item, ok := val.Val.(models.Insurance)
+		if !ok {
+			continue
+		}
+
+		if err = s.contractCl.CreateInsurance(ctx, item); err != nil {
+			continue
+		}
+	}
+
+	return nil
+}
+
+func (s service) ProducePendingPayoffItems(ctx context.Context) error {
+	items, err := s.outbox.Get(ctx, models.Pending, models.GroupPayoff)
+	if err != nil {
+		return fmt.Errorf("failed to get items from outbox: %w", err)
+	}
+
+	for _, val := range items {
+		item, ok := val.Val.(models.Payoff)
+		if !ok {
+			continue
+		}
+
+		if err = s.contractCl.Payoff(ctx, item); err != nil {
+			continue
+		}
+	}
+
+	return nil
+}
+
+func (s service) UpdateInsuranceStatus(ctx context.Context, id string) error {
+	if err := s.outbox.Delete(ctx, id); err != nil {
+		return fmt.Errorf("failed to delete from outbox: %w", err)
+	}
+
+	if err := s.repo.UpdateInsuranceStatus(ctx, id, models.Active); err != nil {
+		return fmt.Errorf("failed to update insurance status: %w", err)
+	}
+
+	return nil
 }
 
 func (s service) GetInsuranceData(ctx context.Context, ownerAddr string) (models.InsuranceData, error) {

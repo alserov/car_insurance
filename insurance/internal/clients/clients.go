@@ -13,5 +13,5 @@ type RecognitionClient interface {
 type ContractClient interface {
 	CreateInsurance(ctx context.Context, ins models.Insurance) error
 	Payoff(ctx context.Context, payoff models.Payoff) error
-	GetCommits(ctx context.Context) chan models.ContractCommit
+	GetCommits(ctx context.Context) chan models.OutboxItem
 }

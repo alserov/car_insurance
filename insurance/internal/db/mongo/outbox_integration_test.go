@@ -90,7 +90,7 @@ func (s *mongoRepoIntegrationSuite) TestGet() {
 }
 
 func (s *mongoRepoIntegrationSuite) TestDelete() {
-	s.Require().NoError(s.repo.Delete(context.Background(), "some random uuid", models.GroupInsurance))
+	s.Require().NoError(s.repo.Delete(context.Background(), "some random uuid"))
 }
 
 func (s *mongoRepoIntegrationSuite) newMongoInstance() testcontainers.Container {

@@ -14,5 +14,5 @@ type Repository interface {
 type Outbox interface {
 	Create(ctx context.Context, item models.OutboxItem) error
 	Get(ctx context.Context, status int, groupID int) ([]models.OutboxItem, error)
-	Delete(ctx context.Context, id string, groupID int) error
+	Delete(ctx context.Context, id string) error
 }
