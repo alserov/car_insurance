@@ -3,8 +3,15 @@ package config
 import "os"
 
 type Config struct {
-	Env      string
-	Broker   Kafka
+	Env    string
+	Broker Kafka
+
+	Databases struct {
+		Redis struct {
+			Addr string
+		}
+	}
+
 	Contract struct {
 		Addr string
 	}
@@ -15,6 +22,7 @@ type Kafka struct {
 	Topics struct {
 		Payoff       string
 		NewInsurance string
+		Commits      string
 	}
 }
 

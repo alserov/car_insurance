@@ -6,6 +6,7 @@ import (
 
 type Consumer[T any] interface {
 	Consume(ctx context.Context) <-chan T
+	Close() error
 }
 
 const (
