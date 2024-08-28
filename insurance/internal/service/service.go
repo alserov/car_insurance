@@ -14,7 +14,7 @@ type Service interface {
 	CreateInsurance(ctx context.Context, insData models.Insurance) error
 	Payoff(ctx context.Context, payoff models.Payoff) error
 	GetInsuranceData(ctx context.Context, ownerAddr string) (models.InsuranceData, error)
-	UpdateInsuranceStatus(ctx context.Context, id string) error
+	ActivateInsurance(ctx context.Context, id string) error
 	ProducePendingInsuranceItems(ctx context.Context) error
 	ProducePendingPayoffItems(ctx context.Context) error
 }
@@ -81,7 +81,7 @@ func (s service) ProducePendingPayoffItems(ctx context.Context) error {
 	return nil
 }
 
-func (s service) UpdateInsuranceStatus(ctx context.Context, id string) error {
+func (s service) ActivateInsurance(ctx context.Context, id string) error {
 	if err := s.outbox.Delete(ctx, id); err != nil {
 		return fmt.Errorf("failed to delete from outbox: %w", err)
 	}

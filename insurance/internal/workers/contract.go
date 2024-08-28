@@ -47,7 +47,7 @@ func (c contract) processContractCommits(ctx context.Context) {
 
 				switch msg.GroupID {
 				case models.GroupInsurance:
-					if err := c.srvc.UpdateInsuranceStatus(jobCtx, msg.ID); err != nil {
+					if err := c.srvc.ActivateInsurance(jobCtx, msg.ID); err != nil {
 						c.log.Error("failed to update insurance status", logger.WithArg("error", err.Error()))
 					}
 					//case models.GroupPayoff:
