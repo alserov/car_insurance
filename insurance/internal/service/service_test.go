@@ -140,7 +140,47 @@ func (s *serviceSuite) TestGetInsuranceData() {
 }
 
 func (s *serviceSuite) TestCreateInsurance() {
+	data := models.Insurance{
+		ID:         "x001",
+		SenderAddr: "x001",
+		Amount:     1000,
+		CarImage:   []byte("image"),
+	}
+
+	s.recognitionCl.EXPECT().
+		CheckIfCarIsOK(gomock.Any(), gomock.Eq(data.CarImage)).
+		Times(1).
+		Return(nil)
+
+	s.outbox.EXPECT().
+		Create(gomock.Any(), gomock.Any()).
+		Times(1).
+		Return(nil)
+
+	s.repo.EXPECT().
+		CreateInsuranceData(gomock.Any(), gomock.Any()).
+		Times(1).
+		Return(nil)
+
+	s.Require().NoError(s.srvc.CreateInsurance(s.ctx, data))
 }
 
 func (s *serviceSuite) TestPayoff() {
+	data := models.Payoff{
+		CarImage:     []byte("image"),
+		ReceiverAddr: "x001",
+		Multiplier:   1.75,
+	}
+
+	s.recognitionCl.EXPECT().
+		CalcDamageMultiplier(gomock.Any(), gomock.Eq(data.CarImage)).
+		Times(1).
+		Return(float32(AvgPriceMult), nil)
+
+	s.outbox.EXPECT().
+		Create(gomock.Any(), gomock.Any()).
+		Times(1).
+		Return(nil)
+
+	s.Require().NoError(s.srvc.Payoff(s.ctx, data))
 }

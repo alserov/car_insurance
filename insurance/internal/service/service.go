@@ -33,6 +33,12 @@ func NewService(cls Clients, outbox db.Outbox, repo db.Repository) Service {
 	}
 }
 
+const (
+	MinPriceMult = 1.5
+	AvgPriceMult = 1.74
+	MaxPriceMult = 1.99
+)
+
 type service struct {
 	recognitionCl clients.RecognitionClient
 	contractCl    clients.ContractClient
@@ -125,9 +131,9 @@ func (s service) CreateInsurance(ctx context.Context, insData models.Insurance) 
 		ActiveTill:         insData.ActiveTill,
 		ID:                 insData.SenderAddr,
 		Price:              insData.Amount,
-		MaxInsurancePayoff: int64(float64(insData.Amount) * 1.99),
-		MinInsurancePayoff: int64(float64(insData.Amount) * 1.5),
-		AvgInsurancePayoff: int64(float64(insData.Amount) * 1.74),
+		MaxInsurancePayoff: int64(float64(insData.Amount) * MaxPriceMult),
+		MinInsurancePayoff: int64(float64(insData.Amount) * MinPriceMult),
+		AvgInsurancePayoff: int64(float64(insData.Amount) * AvgPriceMult),
 	}); err != nil {
 		return fmt.Errorf("failed to create insurance data: %w", err)
 	}
