@@ -28,7 +28,12 @@ func MustStart(cfg *config.Config) {
 	log.Info("starting server")
 
 	// *grpc* clients
-	insuranceClient := grpc.NewInsuranceClient(grpc.Dial(cfg.Services.Insurance.Addr))
+	insuranceConn := grpc.Dial(cfg.Services.Insurance.Addr)
+	defer func() {
+		_ = insuranceConn.Close()
+	}()
+
+	insuranceClient := grpc.NewInsuranceClient(insuranceConn)
 
 	cls := service.Clients{
 		InsuranceClient: insuranceClient,
