@@ -1,6 +1,7 @@
-from flask import Flask, request, jsonify
 import os
+import random
 from werkzeug.utils import secure_filename as sf
+from flask import Flask, request, jsonify
 
 app = Flask(__name__)
 
@@ -24,7 +25,7 @@ def recognition():
 
     os.remove(file_path)
 
-    return jsonify({'score': 0.5})
+    return jsonify({'score': random.uniform(1.5, 1.9)})
 
 
 # starting server
