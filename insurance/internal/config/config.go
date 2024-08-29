@@ -1,6 +1,9 @@
 package config
 
-import "os"
+import (
+	"fmt"
+	"os"
+)
 
 type Config struct {
 	Env  string
@@ -38,6 +41,9 @@ func MustLoad() *Config {
 	cfg.Port = os.Getenv("PORT")
 
 	cfg.Services.RecognitionAddr = os.Getenv("RECOGNITION_ADDR")
+
+	cfg.Databases.Postgres.Addr = fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable",
+		os.Getenv("PG_USER"), os.Getenv("PG_PASSWORD"), os.Getenv("PG_HOST"), os.Getenv("PG_PORT"), os.Getenv("PG_DB"))
 
 	cfg.Broker.Addr = os.Getenv("KAFKA_ADDR")
 	cfg.Broker.Topics.NewInsurance = os.Getenv("INSURANCE_TOPIC")
