@@ -2,6 +2,7 @@ package logger
 
 import (
 	"context"
+	"github.com/alserov/car_insurance/gateway/internal/utils"
 )
 
 type Logger interface {
@@ -27,10 +28,8 @@ func WrapLogger(ctx context.Context, log Logger) context.Context {
 	return context.WithValue(ctx, CtxContextKey, log)
 }
 
-type ContextKey string
-
 const (
-	CtxContextKey ContextKey = "logger"
+	CtxContextKey utils.ContextKey = "logger"
 )
 
 func ExtractLogger(ctx context.Context) Logger {

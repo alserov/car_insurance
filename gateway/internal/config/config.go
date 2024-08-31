@@ -3,8 +3,12 @@ package config
 import "os"
 
 type Config struct {
-	Env      string
-	Port     string
+	Env     string
+	Port    string
+	Tracing struct {
+		Endpoint string
+		Name     string
+	}
 	Services struct {
 		Insurance struct {
 			Addr string

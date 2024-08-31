@@ -3,8 +3,9 @@ package server
 import (
 	"context"
 	"github.com/alserov/car_insurance/gateway/internal/logger"
-	"github.com/alserov/car_insurance/gateway/internal/server/fiber"
+	"github.com/alserov/car_insurance/gateway/internal/server/mux"
 	"github.com/alserov/car_insurance/gateway/internal/service"
+	"go.opentelemetry.io/otel/trace"
 )
 
 type Server interface {
@@ -26,12 +27,13 @@ func MustServe(ctx context.Context, srv Server, port string) {
 
 const (
 	Fiber = iota
+	Mux
 )
 
-func NewServer(routerType uint, srvc *service.Service, log logger.Logger) Server {
+func NewServer(routerType uint, srvc *service.Service, tracer trace.Tracer, log logger.Logger) Server {
 	switch routerType {
-	case Fiber:
-		return fiber.NewServer(srvc, log)
+	case Mux:
+		return mux.NewServer(srvc, tracer, log)
 	default:
 		panic("invalid router type")
 	}

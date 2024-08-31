@@ -1,11 +1,12 @@
-package fiber
+package mux
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/alserov/car_insurance/gateway/internal/service"
 	"github.com/alserov/car_insurance/gateway/internal/service/models"
+	"github.com/alserov/car_insurance/gateway/internal/tracing"
 	"github.com/alserov/car_insurance/gateway/internal/utils"
-	"github.com/gofiber/fiber/v2"
 	"net/http"
 )
 
@@ -36,18 +37,21 @@ type insurance struct {
 // @Failure      400  {string}  "invalid data"
 // @Failure      500  {string}  "internal error"
 // @Router       /insurance/new [post]
-func (i insurance) CreateInsurance(c *fiber.Ctx) error {
+func (i insurance) CreateInsurance(w http.ResponseWriter, r *http.Request) error {
+	ctx, span := tracing.ExtractTracer(r.Context()).Start(r.Context(), "received create insurance request")
+	defer span.End()
+
 	var ins models.Insurance
-	if err := c.BodyParser(&ins); err != nil {
+	if err := json.NewDecoder(r.Body).Decode(&ins); err != nil {
 		return utils.NewError(err.Error(), utils.BadRequest)
 	}
 
-	err := i.service.CreateInsurance(c.Context(), ins)
+	err := i.service.CreateInsurance(ctx, ins)
 	if err != nil {
 		return fmt.Errorf("failed to create insurance: %w", err)
 	}
 
-	c.Status(http.StatusCreated)
+	w.WriteHeader(http.StatusCreated)
 
 	return nil
 }
@@ -63,15 +67,20 @@ func (i insurance) CreateInsurance(c *fiber.Ctx) error {
 // @Failure      400  {string}  "invalid data"
 // @Failure      500  {string}  "internal error"
 // @Router       /insurance/info [get]
-func (i insurance) GetInsuranceData(c *fiber.Ctx) error {
-	addr := c.Query("addr")
+func (i insurance) GetInsuranceData(w http.ResponseWriter, r *http.Request) error {
+	ctx, span := tracing.ExtractTracer(r.Context()).Start(r.Context(), "received get insurance request")
+	defer span.End()
 
-	data, err := i.service.GetInsuranceData(c.Context(), addr)
+	addr := r.URL.Query()["addr"][0]
+
+	data, err := i.service.GetInsuranceData(ctx, addr)
 	if err != nil {
 		return fmt.Errorf("failed to get insurance data: %w", err)
 	}
 
-	_ = c.JSON(data)
+	if err = json.NewEncoder(w).Encode(data); err != nil {
+		return utils.NewError(err.Error(), utils.Internal)
+	}
 
 	return nil
 }
@@ -87,18 +96,21 @@ func (i insurance) GetInsuranceData(c *fiber.Ctx) error {
 // @Failure      400  {string}  "invalid data"
 // @Failure      500  {string}  "internal error"
 // @Router       /insurance/payoff [post]
-func (i insurance) Payoff(c *fiber.Ctx) error {
+func (i insurance) Payoff(w http.ResponseWriter, r *http.Request) error {
+	ctx, span := tracing.ExtractTracer(r.Context()).Start(r.Context(), "received payoff request")
+	defer span.End()
+
 	var pay models.Payoff
-	if err := c.BodyParser(&pay); err != nil {
+	if err := json.NewDecoder(r.Body).Decode(&pay); err != nil {
 		return utils.NewError(err.Error(), utils.BadRequest)
 	}
 
-	err := i.service.Payoff(c.Context(), pay)
+	err := i.service.Payoff(ctx, pay)
 	if err != nil {
 		return fmt.Errorf("failed to payoff: %w", err)
 	}
 
-	c.Status(http.StatusCreated)
+	w.WriteHeader(http.StatusCreated)
 
 	return nil
 }

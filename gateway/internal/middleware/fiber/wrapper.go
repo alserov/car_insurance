@@ -6,18 +6,20 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-func WithWrappers(wrs ...middleware.Wrapper) func(handler fiber.Handler) fiber.Handler {
-	return func(handler fiber.Handler) fiber.Handler {
-		return func(c *fiber.Ctx) error {
-			ctx := context.Background()
+func WithWrappers(wrs ...middleware.Wrapper) fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		ctx := context.Background()
 
-			for _, wr := range wrs {
-				ctx = wr(ctx)
-			}
-
-			c.Locals(middleware.CtxKey, ctx)
-
-			return handler(c)
+		for _, wr := range wrs {
+			ctx = wr(ctx)
 		}
+
+		c.Locals(middleware.CtxKey, ctx)
+
+		return c.Next()
 	}
+}
+
+func ExtractContext(c *fiber.Ctx) context.Context {
+	return c.Context().Value(middleware.CtxKey).(context.Context)
 }

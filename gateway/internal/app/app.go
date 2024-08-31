@@ -7,6 +7,7 @@ import (
 	"github.com/alserov/car_insurance/gateway/internal/logger"
 	"github.com/alserov/car_insurance/gateway/internal/server"
 	"github.com/alserov/car_insurance/gateway/internal/service"
+	"github.com/alserov/car_insurance/gateway/internal/tracing"
 	"os/signal"
 	"syscall"
 
@@ -24,6 +25,17 @@ func MustStart(cfg *config.Config) {
 
 	// logger
 	log := logger.NewLogger(logger.Zap, cfg.Env)
+
+	// tracer
+	exp := tracing.NewOtlExporter(ctx, cfg.Tracing.Endpoint)
+	defer func() {
+		_ = exp.Shutdown(ctx)
+	}()
+
+	tracer, tp := tracing.NewTracer(exp, cfg.Tracing.Name)
+	defer func() {
+		_ = tp.Shutdown(ctx)
+	}()
 
 	log.Info("starting server")
 
@@ -43,7 +55,7 @@ func MustStart(cfg *config.Config) {
 	srvc := service.NewService(cls)
 
 	// server
-	srvr := server.NewServer(server.Fiber, srvc, log)
+	srvr := server.NewServer(server.Mux, srvc, tracer, log)
 
 	// starting server
 	log.Info("server is running")
