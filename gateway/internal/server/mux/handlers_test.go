@@ -13,9 +13,11 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/suite"
 	"go.opentelemetry.io/otel/exporters/stdout/stdouttrace"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 )
 
 func TestMuxHandlersSuite(t *testing.T) {
@@ -84,18 +86,34 @@ func (s *MuxHandlersSuite) TestCreateInsurance() {
 }
 
 func (s *MuxHandlersSuite) TestGetInsuranceData() {
-	data := "x001"
+	data := models.InsuranceData{
+		Status:             1,
+		ActiveTill:         time.Date(2024, 3, 3, 3, 3, 3, 3, time.UTC).String(),
+		Owner:              "x001",
+		Price:              100,
+		MaxInsurancePayoff: 199,
+		MinInsurancePayoff: 101,
+		AvgInsurancePayoff: 150,
+	}
 
 	s.insuranceCl.EXPECT().
-		GetInsuranceData(gomock.Any(), gomock.Eq(data)).
+		GetInsuranceData(gomock.Any(), gomock.Eq(data.Owner)).
 		Times(1).
-		Return(nil)
+		Return(data, nil)
 
 	w := httptest.NewRecorder()
-	r := httptest.NewRequest(http.MethodGet, fmt.Sprintf("/?addr=%s", data), nil).WithContext(s.ctx)
+	r := httptest.NewRequest(http.MethodGet, fmt.Sprintf("/?addr=%s", data.Owner), nil).WithContext(s.ctx)
 
 	s.Require().NoError(s.handler.insurance.GetInsuranceData(w, r))
 	s.Require().Equal(http.StatusOK, w.Code)
+
+	b, err := io.ReadAll(w.Body)
+	s.Require().NoError(err)
+
+	var body models.InsuranceData
+	s.Require().NoError(json.Unmarshal(b, &body))
+
+	s.Require().Equal(data, body)
 }
 
 func (s *MuxHandlersSuite) TestPayoff() {
@@ -115,6 +133,6 @@ func (s *MuxHandlersSuite) TestPayoff() {
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest(http.MethodPost, "/", bytes.NewReader(b)).WithContext(s.ctx)
 
-	s.Require().NoError(s.handler.insurance.CreateInsurance(w, r))
+	s.Require().NoError(s.handler.insurance.Payoff(w, r))
 	s.Require().Equal(http.StatusCreated, w.Code)
 }
