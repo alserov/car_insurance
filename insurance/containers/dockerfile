@@ -1,0 +1,18 @@
+FROM golang:alpine as builder
+
+WORKDIR /build
+
+COPY go.mod go.sum ./
+COPY . ./
+
+RUN go mod download
+
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o ./bin
+
+FROM scratch
+
+WORKDIR /app
+
+COPY --from=builder ./build/bin ./bin
+
+CMD ["./bin"]

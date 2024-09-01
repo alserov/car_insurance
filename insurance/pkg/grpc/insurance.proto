@@ -1,0 +1,35 @@
+syntax = "proto3";
+
+option go_package = "github.com/alserov/car_insurance/insurance/pkg/gRPC;proto";
+
+import "google/protobuf/empty.proto";
+
+service Insurance {
+  rpc CreateInsurance(NewInsurance) returns(google.protobuf.Empty);
+  rpc Payoff(NewPayoff) returns(google.protobuf.Empty);
+  rpc GetInsuranceData(InsuranceOwner) returns(InsuranceData);
+}
+
+message NewInsurance {
+  string senderAddr = 1;
+  int64 amount = 2;
+  bytes carImage = 3;
+}
+
+message NewPayoff {
+  string receiverAddr = 1;
+  bytes carImage = 2;
+}
+
+message InsuranceOwner {
+  string addr = 1;
+}
+
+message InsuranceData {
+  string activeTill = 1;
+  string owner = 2;
+  int64 price = 3;
+  int64 maxInsurancePayoff = 4;
+  int64 minInsurancePayoff = 5;
+  int64 avgInsurancePayoff = 6;
+}
