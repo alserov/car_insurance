@@ -16,19 +16,14 @@ type Config struct {
 	}
 }
 
-type Kafka struct {
-	Addr   string
-	Topics struct {
-		Payoff       string
-		NewInsurance string
-	}
-}
-
 func MustLoad() *Config {
 	var cfg Config
 
 	cfg.Env = os.Getenv("ENV")
 	cfg.Port = os.Getenv("PORT")
+
+	cfg.Tracing.Name = os.Getenv("TRACING_NAME")
+	cfg.Tracing.Endpoint = os.Getenv("TRACING_EP")
 
 	cfg.Services.Insurance.Addr = os.Getenv("INSURANCE_ADDR")
 
