@@ -3,71 +3,76 @@ package service
 import (
 	"context"
 	"fmt"
-	api "github.com/alserov/car_insurance/contract/internal/contracts"
+	"github.com/alserov/car_insurance/contract/internal/clients"
+	"github.com/alserov/car_insurance/contract/internal/db"
 	"github.com/alserov/car_insurance/contract/internal/service/models"
-	"github.com/alserov/car_insurance/contract/internal/utils"
-	"github.com/ethereum/go-ethereum/ethclient"
-	"math/big"
-	"time"
+	"github.com/google/uuid"
 )
 
 type Service interface {
+	GetNewInsuranceCommits(ctx context.Context) ([]models.OutboxItem, error)
+	DeleteCommits(ctx context.Context, ids []string) error
 	CreateInsurance(ctx context.Context, ins models.NewInsurance) error
 	Payoff(ctx context.Context, ins models.Payoff) error
 }
 
-func NewService(api *api.Api, ethCl *ethclient.Client) Service {
+type Clients struct {
+	InsuranceClient clients.InsuranceClient
+	ContractClient  clients.ContractClient
+}
+
+func NewService(cls Clients, outboxRepo db.Outbox) Service {
 	return &service{
-		insAPI: api,
-		ethCl:  ethCl,
+		outboxRepo:     outboxRepo,
+		contractClient: cls.ContractClient,
 	}
 }
 
 type service struct {
-	insAPI *api.Api
+	outboxRepo db.Outbox
 
-	ethCl *ethclient.Client
+	contractClient clients.ContractClient
 }
 
-const (
-	MonthPeriod    = time.Hour * 24 * 30
-	SixMonthPeriod = MonthPeriod * 6
-	YearPeriod     = MonthPeriod * 12
-)
-
-func (s service) CreateInsurance(ctx context.Context, ins models.NewInsurance) error {
-	auth, err := api.GetAccountAuth(ctx, s.ethCl, ins.Sender)
-	if err != nil {
-		return fmt.Errorf("failed to get account auth: %w", err)
-	}
-
-	activeTill := time.Now().Add(SixMonthPeriod)
-
-	tx, err := s.insAPI.Insure(auth, big.NewInt(ins.Amount), big.NewInt(activeTill.Unix()))
-	if err != nil {
-		return utils.NewError(err.Error(), utils.Internal)
-	}
-
-	if err = api.CheckTransactionReceipt(s.ethCl, tx.Hash().String()); err != nil {
-		return utils.NewError(err.Error(), utils.BadRequest)
+func (s service) DeleteCommits(ctx context.Context, ids []string) error {
+	for _, id := range ids {
+		err := s.outboxRepo.Delete(ctx, id)
+		if err != nil {
+			return fmt.Errorf("failed to delete commit: %w", err)
+		}
 	}
 
 	return nil
 }
 
-func (s service) Payoff(ctx context.Context, ins models.Payoff) error {
-	auth, err := api.GetAccountAuth(ctx, s.ethCl, ins.Receiver)
+func (s service) GetNewInsuranceCommits(ctx context.Context) ([]models.OutboxItem, error) {
+	items, err := s.outboxRepo.Get(ctx, models.Pending, models.GroupNewInsurances)
 	if err != nil {
-		return fmt.Errorf("failed to get account auth: %w", err)
+		return nil, fmt.Errorf("failed to get outbox items: %w", err)
 	}
 
-	tx, err := s.insAPI.Payoff(auth, big.NewInt(ins.Mult))
-	if err != nil {
-		return utils.NewError(err.Error(), utils.Internal)
+	return items, nil
+}
+
+func (s service) CreateInsurance(ctx context.Context, ins models.NewInsurance) error {
+	if err := s.contractClient.Insure(ctx, ins); err != nil {
+		return fmt.Errorf("failed to create insurance: %w", err)
 	}
 
-	if err = api.CheckTransactionReceipt(s.ethCl, tx.Hash().String()); err != nil {
-		return utils.NewError(err.Error(), utils.BadRequest)
+	if err := s.outboxRepo.Create(ctx, models.OutboxItem{
+		ID:      uuid.NewString(),
+		GroupID: models.GroupNewInsurances,
+		Status:  models.Pending,
+	}); err != nil {
+		return fmt.Errorf("failed to write to outbox: %w", err)
+	}
+
+	return nil
+}
+
+func (s service) Payoff(ctx context.Context, pay models.Payoff) error {
+	if err := s.contractClient.Payoff(ctx, pay); err != nil {
+		return fmt.Errorf("failed to payoff: %w", err)
 	}
 
 	return nil

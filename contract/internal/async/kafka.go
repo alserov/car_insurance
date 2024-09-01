@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"github.com/IBM/sarama"
 	"github.com/alserov/car_insurance/contract/internal/logger"
+	"github.com/alserov/car_insurance/contract/internal/utils"
 )
 
 func newKafka[T any](addr, topic string) Consumer[T] {
@@ -14,7 +15,6 @@ func newKafka[T any](addr, topic string) Consumer[T] {
 	if err != nil {
 		panic("failed to init consumer: " + err.Error())
 	}
-	defer cons.Close()
 
 	partitions, _ := cons.Partitions(topic)
 
@@ -32,6 +32,12 @@ func newKafka[T any](addr, topic string) Consumer[T] {
 type consumer[T any] struct {
 	cons  sarama.Consumer
 	pCons sarama.PartitionConsumer
+}
+
+func (c consumer[T]) Close() error {
+	_ = c.cons.Close()
+	_ = c.pCons.Close()
+	return nil
 }
 
 func (c consumer[T]) Consume(ctx context.Context) <-chan T {
@@ -61,4 +67,48 @@ func (c consumer[T]) Consume(ctx context.Context) <-chan T {
 	}()
 
 	return resChan
+}
+
+func newKafkaProducer(addr, topic string) Producer {
+	prodCfg := sarama.NewConfig()
+	prodCfg.Producer.Partitioner = sarama.NewRandomPartitioner
+	prodCfg.Producer.RequiredAcks = sarama.WaitForAll
+	prodCfg.Producer.Return.Successes = true
+
+	prod, err := sarama.NewSyncProducer([]string{addr}, prodCfg)
+	if err != nil {
+		panic("failed to init producer: " + err.Error())
+	}
+
+	return &producer{
+		topic: topic,
+		p:     prod,
+	}
+}
+
+type producer struct {
+	topic string
+
+	p sarama.SyncProducer
+}
+
+func (p producer) Close() error {
+	return p.p.Close()
+}
+
+func (p producer) Produce(ctx context.Context, val any) error {
+	b, err := json.Marshal(val)
+	if err != nil {
+		return utils.NewError(err.Error(), utils.Internal)
+	}
+
+	_, _, err = p.p.SendMessage(&sarama.ProducerMessage{
+		Topic: p.topic,
+		Value: sarama.StringEncoder(b),
+	})
+	if err != nil {
+		return utils.NewError(err.Error(), utils.Internal)
+	}
+
+	return nil
 }
