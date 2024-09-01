@@ -5,6 +5,8 @@ go 1.22.5
 require (
 	github.com/IBM/sarama v1.43.2
 	github.com/ethereum/go-ethereum v1.14.7
+	github.com/google/uuid v1.3.0
+	github.com/joho/godotenv v1.5.1
 	github.com/redis/go-redis/v9 v9.6.1
 	go.uber.org/zap v1.27.0
 )
@@ -29,7 +31,6 @@ require (
 	github.com/fsnotify/fsnotify v1.6.0 // indirect
 	github.com/go-ole/go-ole v1.3.0 // indirect
 	github.com/golang/snappy v0.0.5-0.20220116011046-fa5810519dcb // indirect
-	github.com/google/uuid v1.3.0 // indirect
 	github.com/gorilla/websocket v1.4.2 // indirect
 	github.com/hashicorp/errwrap v1.0.0 // indirect
 	github.com/hashicorp/go-multierror v1.1.1 // indirect

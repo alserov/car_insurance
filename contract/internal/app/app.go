@@ -14,6 +14,8 @@ import (
 	"github.com/alserov/car_insurance/contract/internal/workers"
 	"os/signal"
 	"syscall"
+
+	_ "github.com/joho/godotenv/autoload"
 )
 
 func MustStart(cfg *config.Config) {
