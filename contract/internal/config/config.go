@@ -34,7 +34,7 @@ func MustLoad() *Config {
 
 	cfg.Env = os.Getenv("ENV")
 
-	cfg.Databases.Redis.Addr = fmt.Sprintf(fmt.Sprintf("redis://%s@%s:%s", os.Getenv("REDIS_USER"), os.Getenv("REDIS_HOST"), os.Getenv("REDIS_PORT")))
+	cfg.Databases.Redis.Addr = fmt.Sprintf("redis://%s@%s:%s", os.Getenv("REDIS_USER"), os.Getenv("REDIS_HOST"), os.Getenv("REDIS_PORT"))
 
 	cfg.Contract.Addr = os.Getenv("CONTRACT_ADDR")
 
