@@ -8,7 +8,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        directory: [contract, insurance, gateway, recognition]
+        directory: [contract, insurance, gateway]
         language: [go, python]
 
     steps:
@@ -56,7 +56,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        directory: [ contract, insurance, gateway, recognition ]
+        directory: [ contract, insurance, gateway]
         language: [ go, python ]
     steps:
       - name: Checkout code
