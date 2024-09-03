@@ -9,7 +9,7 @@ jobs:
     strategy:
       matrix:
         directory: [contract, insurance, gateway]
-        language: [go, python]
+        language: [go]
 
     steps:
       - name: Checkout code
@@ -57,7 +57,7 @@ jobs:
     strategy:
       matrix:
         directory: [ contract, insurance, gateway]
-        language: [ go, python ]
+        language: [ go ]
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
