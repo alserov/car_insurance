@@ -1,0 +1,203 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "contact": {}
+    },
+    "paths": {
+        "/insurance/info": {
+            "get": {
+                "description": "get insurance data",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "insurance"
+                ],
+                "summary": "GetInsuranceData",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "account addr",
+                        "name": "addr",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.InsuranceData"
+                        }
+                    },
+                    "400": {
+                        "description": "invalid data",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "internal error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/insurance/new": {
+            "post": {
+                "description": "create new insurance",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "insurance"
+                ],
+                "summary": "CreateInsurance",
+                "parameters": [
+                    {
+                        "description": "insurance data",
+                        "name": "input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.Insurance"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "type": "int"
+                        }
+                    },
+                    "400": {
+                        "description": "invalid data",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "internal error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/insurance/payoff": {
+            "post": {
+                "description": "get insurance payoff",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "insurance"
+                ],
+                "summary": "Payoff",
+                "parameters": [
+                    {
+                        "description": "payoff data",
+                        "name": "input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.Payoff"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "type": "int"
+                        }
+                    },
+                    "400": {
+                        "description": "invalid data",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "internal error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "models.Insurance": {
+            "type": "object",
+            "properties": {
+                "amount": {
+                    "type": "integer"
+                },
+                "carImage": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "senderAddr": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.InsuranceData": {
+            "type": "object",
+            "properties": {
+                "activeTill": {
+                    "type": "string"
+                },
+                "avgInsurancePayoff": {
+                    "type": "integer"
+                },
+                "maxInsurancePayoff": {
+                    "type": "integer"
+                },
+                "minInsurancePayoff": {
+                    "type": "integer"
+                },
+                "owner": {
+                    "type": "string"
+                },
+                "price": {
+                    "type": "integer"
+                },
+                "status": {
+                    "type": "integer"
+                }
+            }
+        },
+        "models.Payoff": {
+            "type": "object",
+            "properties": {
+                "carImage": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "receiverAddr": {
+                    "type": "string"
+                }
+            }
+        }
+    }
+}

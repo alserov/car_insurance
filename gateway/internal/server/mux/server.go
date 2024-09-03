@@ -1,0 +1,64 @@
+package mux
+
+import (
+	"fmt"
+	"github.com/alserov/car_insurance/gateway/internal/logger"
+	"github.com/alserov/car_insurance/gateway/internal/middleware"
+	"github.com/alserov/car_insurance/gateway/internal/middleware/mux"
+	"github.com/alserov/car_insurance/gateway/internal/service"
+	"go.opentelemetry.io/otel/trace"
+	"net"
+	"net/http"
+)
+
+func NewServer(srvc *service.Service, tracer trace.Tracer, log logger.Logger) *server {
+	return &server{
+		app:   http.NewServeMux(),
+		srvc:  srvc,
+		trace: tracer,
+		log:   log,
+	}
+}
+
+type server struct {
+	app *http.ServeMux
+	lis net.Listener
+
+	srvc  *service.Service
+	trace trace.Tracer
+	log   logger.Logger
+}
+
+func (s server) Serve(port string) error {
+	setupRoutes(s.app, newHandler(s.srvc))
+
+	s.app.Handle("/",
+		mux.NewChain(
+			mux.WithRecovery(s.app),
+			mux.WithWrappers(
+				middleware.WithTracer(s.trace),
+				middleware.WithLogger(s.log),
+			)(s.app),
+		),
+	)
+
+	srvr := &http.Server{
+		Handler: s.app,
+	}
+
+	var err error
+	s.lis, err = net.Listen("tcp", fmt.Sprintf(":%s", port))
+	if err != nil {
+		panic("failed to listen: " + err.Error())
+	}
+
+	if err = srvr.Serve(s.lis); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (s server) Shutdown() error {
+	return s.lis.Close()
+}

@@ -1,0 +1,12 @@
+version: '3.8'
+
+services:
+  mongo:
+    image: mongo:latest
+    ports:
+      - "27017:27017"
+    volumes:
+      - outbox_insurance_data:/var/lib/mongo/data
+
+volumes:
+ outbox_insurance_data:

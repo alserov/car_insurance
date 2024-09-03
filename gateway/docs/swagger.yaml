@@ -1,0 +1,131 @@
+definitions:
+  models.Insurance:
+    properties:
+      amount:
+        type: integer
+      carImage:
+        items:
+          type: integer
+        type: array
+      senderAddr:
+        type: string
+    type: object
+  models.InsuranceData:
+    properties:
+      activeTill:
+        type: string
+      avgInsurancePayoff:
+        type: integer
+      maxInsurancePayoff:
+        type: integer
+      minInsurancePayoff:
+        type: integer
+      owner:
+        type: string
+      price:
+        type: integer
+      status:
+        type: integer
+    type: object
+  models.Payoff:
+    properties:
+      carImage:
+        items:
+          type: integer
+        type: array
+      receiverAddr:
+        type: string
+    type: object
+info:
+  contact: {}
+paths:
+  /insurance/info:
+    get:
+      consumes:
+      - application/json
+      description: get insurance data
+      parameters:
+      - description: account addr
+        in: query
+        name: addr
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.InsuranceData'
+        "400":
+          description: invalid data
+          schema:
+            type: string
+        "500":
+          description: internal error
+          schema:
+            type: string
+      summary: GetInsuranceData
+      tags:
+      - insurance
+  /insurance/new:
+    post:
+      consumes:
+      - application/json
+      description: create new insurance
+      parameters:
+      - description: insurance data
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/models.Insurance'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            type: int
+        "400":
+          description: invalid data
+          schema:
+            type: string
+        "500":
+          description: internal error
+          schema:
+            type: string
+      summary: CreateInsurance
+      tags:
+      - insurance
+  /insurance/payoff:
+    post:
+      consumes:
+      - application/json
+      description: get insurance payoff
+      parameters:
+      - description: payoff data
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/models.Payoff'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            type: int
+        "400":
+          description: invalid data
+          schema:
+            type: string
+        "500":
+          description: internal error
+          schema:
+            type: string
+      summary: Payoff
+      tags:
+      - insurance
+swagger: "2.0"
