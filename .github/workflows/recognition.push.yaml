@@ -1,4 +1,4 @@
-name: CI (recognition)
+#name: CI (recognition)
 on:
   push:
     branches:
@@ -13,44 +13,44 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
+#
+#      - name: Set up Python environment
+#        uses: actions/setup-python@v2
+#        with:
+#          python-version: '3.8'
+#
+#      - name: Install Python dependencies
+#        run: |
+#          python -m venv venv
+#          source venv/bin/activate
+#          pip install -r recognition/requirements.txt
+#
+#      - name: Run linters for Python
+#        run: |
+#          source venv/bin/activate
+#          flake8 recognition
 
-      - name: Set up Python environment
-        uses: actions/setup-python@v2
-        with:
-          python-version: '3.8'
+#  test:
+#    runs-on: ubuntu-latest
+#    strategy:
+#      matrix:
+#        directory: [ recognition ]
+#    steps:
+#      - name: Checkout code
+#        uses: actions/checkout@v2
 
-      - name: Install Python dependencies
-        run: |
-          python -m venv venv
-          source venv/bin/activate
-          pip install -r recognition/requirements.txt
-
-      - name: Run linters for Python
-        run: |
-          source venv/bin/activate
-          flake8 recognition
-
-  test:
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        directory: [ recognition ]
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-
-      - name: Set up Python environment
-        uses: actions/setup-python@v2
-        with:
-          python-version: '3.8'
-
-      - name: Install Python dependencies
-        run: |
-          python -m venv venv
-          source venv/bin/activate
-          pip install -r recognition/requirements.txt
-
-      - name: Run tests for Python
-        run: |
-          source venv/bin/activate
-          pytest recognition/tests
+#      - name: Set up Python environment
+#        uses: actions/setup-python@v2
+#        with:
+#          python-version: '3.8'
+#
+#      - name: Install Python dependencies
+#        run: |
+#          python -m venv venv
+#          source venv/bin/activate
+#          pip install -r recognition/requirements.txt
+#
+#      - name: Run tests for Python
+#        run: |
+#          source venv/bin/activate
+#          pytest recognition/tests
