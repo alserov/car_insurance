@@ -26,7 +26,7 @@ type (
 		ActiveTill time.Time `json:"activeTill"`
 	}
 	Payoff struct {
-		Receiver string `json:"receiver"`
-		Mult     int64  `json:"mult"`
+		Receiver string  `json:"receiver"`
+		Mult     float32 `json:"mult"`
 	}
 )

@@ -29,7 +29,8 @@ func (c contract) Payoff(ctx context.Context, pay models.Payoff) error {
 		return fmt.Errorf("failed to get account auth: %w", err)
 	}
 
-	tx, err := c.api.Payoff(auth, big.NewInt(pay.Mult))
+	// pay.Mult is thought to be between 1.5 and 1.99
+	tx, err := c.api.Payoff(auth, big.NewInt(int64(pay.Mult*100)))
 	if err != nil {
 		return utils.NewError(err.Error(), utils.Internal)
 	}
