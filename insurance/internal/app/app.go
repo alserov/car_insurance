@@ -35,7 +35,7 @@ func MustStart(cfg *config.Config) {
 		_ = mongoConn.Disconnect(context.Background())
 	}()
 
-	postgresConn := postgres.MustConnect(cfg.Databases.Postgres.Addr)
+	postgresConn := postgres.MustConnect(cfg.Databases.Postgres.Addr, cfg.Databases.Postgres.Migrations)
 	defer func() {
 		_ = postgresConn.Close()
 	}()

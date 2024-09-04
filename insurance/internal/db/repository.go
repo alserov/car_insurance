@@ -8,7 +8,7 @@ import (
 type Repository interface {
 	GetInsuranceData(ctx context.Context, ownerAddr string) (models.InsuranceData, error)
 	CreateInsuranceData(ctx context.Context, insData models.InsuranceData) error
-	UpdateInsuranceStatus(ctx context.Context, id string, status uint) error
+	UpdateInsuranceStatus(ctx context.Context, id string, status int) error
 }
 
 type Outbox interface {

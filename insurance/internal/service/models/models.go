@@ -37,7 +37,7 @@ type Payoff struct {
 type InsuranceData struct {
 	ID                 string    `json:"id"`
 	Status             int       `json:"status"`
-	ActiveTill         time.Time `json:"activeTill"`
+	ActiveTill         time.Time `json:"activeTill" db:"active_till"`
 	Price              int64     `json:"price"`
 	MaxInsurancePayoff int64     `json:"maxInsurancePayoff"`
 	MinInsurancePayoff int64     `json:"minInsurancePayoff"`
