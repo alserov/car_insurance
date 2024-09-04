@@ -111,7 +111,7 @@ func (s *serviceSuite) TestUpdateInsuranceStatus() {
 		Return(nil)
 
 	s.repo.EXPECT().
-		UpdateInsuranceStatus(gomock.Any(), gomock.Eq("x001"), uint(models.Active)).
+		UpdateInsuranceStatus(gomock.Any(), gomock.Eq("x001"), models.Active).
 		Times(1).
 		Return(nil)
 

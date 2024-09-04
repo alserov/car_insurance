@@ -20,7 +20,8 @@ type Config struct {
 			Addr string
 		}
 		Postgres struct {
-			Addr string
+			Addr       string
+			Migrations string
 		}
 	}
 }
@@ -44,6 +45,7 @@ func MustLoad() *Config {
 
 	cfg.Databases.Postgres.Addr = fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable",
 		os.Getenv("PG_USER"), os.Getenv("PG_PASSWORD"), os.Getenv("PG_HOST"), os.Getenv("PG_PORT"), os.Getenv("PG_DB"))
+	cfg.Databases.Postgres.Migrations = os.Getenv("PG_MIGRATIONS")
 
 	cfg.Broker.Addr = os.Getenv("KAFKA_ADDR")
 	cfg.Broker.Topics.NewInsurance = os.Getenv("INSURANCE_TOPIC")

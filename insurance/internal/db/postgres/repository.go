@@ -16,7 +16,7 @@ type postgres struct {
 	*sqlx.DB
 }
 
-func (p postgres) UpdateInsuranceStatus(ctx context.Context, id string, status uint) error {
+func (p postgres) UpdateInsuranceStatus(ctx context.Context, id string, status int) error {
 	query := `UPDATE insurances SET status = $1 WHERE id = $2`
 
 	_, err := p.ExecContext(ctx, query, status, id)
@@ -39,7 +39,7 @@ func (p postgres) CreateInsuranceData(ctx context.Context, insData models.Insura
 }
 
 func (p postgres) GetInsuranceData(ctx context.Context, ownerAddr string) (models.InsuranceData, error) {
-	query := `SELECT FROM insurances * WHERE id = $2`
+	query := `SELECT * FROM insurances WHERE id = $1`
 
 	row := p.QueryRowx(query, ownerAddr)
 
@@ -47,6 +47,8 @@ func (p postgres) GetInsuranceData(ctx context.Context, ownerAddr string) (model
 	if err := row.StructScan(&data); err != nil {
 		return models.InsuranceData{}, utils.NewError(err.Error(), utils.Internal)
 	}
+
+	data.ActiveTill = data.ActiveTill.UTC()
 
 	return data, nil
 }

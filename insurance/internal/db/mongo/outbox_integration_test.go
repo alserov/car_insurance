@@ -14,15 +14,7 @@ import (
 )
 
 func TestIntegration(t *testing.T) {
-	s := mongoRepoIntegrationSuite{}
-
-	s.container = s.newMongoInstance()
-	defer func() {
-		_ =
-			s.container.Terminate(context.Background())
-	}()
-
-	suite.Run(t, &s)
+	suite.Run(t, new(mongoRepoIntegrationSuite))
 
 }
 
@@ -51,6 +43,8 @@ func (s *mongoRepoIntegrationSuite) SetupTest() {
 		},
 	}
 
+	s.container = s.newMongoInstance()
+
 	port, err := s.container.MappedPort(context.Background(), "27017")
 	s.Require().NoError(err)
 
@@ -60,6 +54,7 @@ func (s *mongoRepoIntegrationSuite) SetupTest() {
 
 func (s *mongoRepoIntegrationSuite) TeardownTest() {
 	s.Require().NoError(s.conn.Disconnect(context.Background()))
+	s.Require().NoError(s.container.Terminate(context.Background()))
 }
 
 func (s *mongoRepoIntegrationSuite) TestCreate() {
