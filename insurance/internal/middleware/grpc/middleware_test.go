@@ -59,7 +59,6 @@ func (s *GRPCMiddlewareSuite) TestWithLogger() {
 func (s *GRPCMiddlewareSuite) TestWithPanicRecovery() {
 	res, err := WithRecovery()(s.ctx, "data", &grpc.UnaryServerInfo{}, func(ctx context.Context, req any) (any, error) {
 		panic("panic")
-		return 1, nil
 	})
 	s.Require().NoError(err)
 	s.Require().Nil(res)
