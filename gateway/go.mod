@@ -20,6 +20,7 @@ require (
 	github.com/go-openapi/jsonreference v0.20.0 // indirect
 	github.com/go-openapi/spec v0.20.6 // indirect
 	github.com/go-openapi/swag v0.19.15 // indirect
+	github.com/go-redis/redis v6.15.9+incompatible // indirect
 	github.com/gofiber/swagger v1.1.0 // indirect
 	github.com/golang/mock v1.6.0 // indirect
 	github.com/google/uuid v1.6.0 // indirect
@@ -33,6 +34,7 @@ require (
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/mattn/go-runewidth v0.0.15 // indirect
 	github.com/opentracing/opentracing-go v1.2.0 // indirect
+	github.com/redis/go-redis v6.15.9+incompatible // indirect
 	github.com/rivo/uniseg v0.2.0 // indirect
 	github.com/swaggo/files v0.0.0-20220610200504-28940afbdbfe // indirect
 	github.com/swaggo/files/v2 v2.0.0 // indirect

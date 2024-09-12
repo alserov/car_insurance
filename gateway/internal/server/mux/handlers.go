@@ -3,6 +3,7 @@ package mux
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/alserov/car_insurance/gateway/internal/cache"
 	"github.com/alserov/car_insurance/gateway/internal/service"
 	"github.com/alserov/car_insurance/gateway/internal/service/models"
 	"github.com/alserov/car_insurance/gateway/internal/tracing"
@@ -10,10 +11,11 @@ import (
 	"net/http"
 )
 
-func newHandler(srvc *service.Service) *handler {
+func newHandler(srvc *service.Service, cache cache.Cache) *handler {
 	return &handler{
 		insurance: insurance{
 			service: srvc.Insurance,
+			cache:   cache,
 		},
 	}
 }
@@ -24,6 +26,8 @@ type handler struct {
 
 type insurance struct {
 	service service.Insurance
+
+	cache cache.Cache
 }
 
 // CreateInsurance godoc
@@ -72,6 +76,12 @@ func (i insurance) GetInsuranceData(w http.ResponseWriter, r *http.Request) erro
 	defer span.End()
 
 	addr := r.URL.Query()["addr"][0]
+
+	if val, err := i.cache.Get(ctx, addr); err == nil {
+		if err = json.NewEncoder(w).Encode(val); err != nil {
+			return utils.NewError(err.Error(), utils.Internal)
+		}
+	}
 
 	data, err := i.service.GetInsuranceData(ctx, addr)
 	if err != nil {
