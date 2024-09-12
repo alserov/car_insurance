@@ -2,6 +2,7 @@ package server
 
 import (
 	"context"
+	"github.com/alserov/car_insurance/gateway/internal/cache"
 	"github.com/alserov/car_insurance/gateway/internal/logger"
 	"github.com/alserov/car_insurance/gateway/internal/server/mux"
 	"github.com/alserov/car_insurance/gateway/internal/service"
@@ -30,10 +31,10 @@ const (
 	Mux
 )
 
-func NewServer(routerType uint, srvc *service.Service, tracer trace.Tracer, log logger.Logger) Server {
+func NewServer(routerType uint, srvc *service.Service, cache cache.Cache, tracer trace.Tracer, log logger.Logger) Server {
 	switch routerType {
 	case Mux:
-		return mux.NewServer(srvc, tracer, log)
+		return mux.NewServer(srvc, cache, tracer, log)
 	default:
 		panic("invalid router type")
 	}

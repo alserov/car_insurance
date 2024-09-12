@@ -10,6 +10,7 @@ import (
 	"github.com/alserov/car_insurance/gateway/internal/service"
 	"github.com/alserov/car_insurance/gateway/internal/service/models"
 	"github.com/alserov/car_insurance/gateway/internal/tracing"
+	"github.com/alserov/car_insurance/gateway/internal/utils"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/suite"
 	"go.opentelemetry.io/otel/exporters/stdout/stdouttrace"
@@ -32,6 +33,7 @@ type MuxHandlersSuite struct {
 
 	ctrl        *gomock.Controller
 	insuranceCl *mocks.MockInsuranceClient
+	cache       *mocks.MockCache
 
 	ctx context.Context
 }
@@ -40,12 +42,14 @@ func (s *MuxHandlersSuite) SetupTest() {
 	s.ctrl = gomock.NewController(s.T())
 
 	s.insuranceCl = mocks.NewMockInsuranceClient(s.ctrl)
+	s.cache = mocks.NewMockCache(s.ctrl)
 
 	s.srvc = service.NewService(service.Clients{InsuranceClient: s.insuranceCl})
 
 	s.handler = &handler{
 		insurance: insurance{
 			service: s.srvc.Insurance,
+			cache:   s.cache,
 		},
 	}
 
@@ -95,6 +99,11 @@ func (s *MuxHandlersSuite) TestGetInsuranceData() {
 		MinInsurancePayoff: 101,
 		AvgInsurancePayoff: 150,
 	}
+
+	s.cache.EXPECT().
+		Get(gomock.Any(), gomock.Eq(data.Owner)).
+		Return(nil, utils.NewError("not found", utils.BadRequest)).
+		Times(1)
 
 	s.insuranceCl.EXPECT().
 		GetInsuranceData(gomock.Any(), gomock.Eq(data.Owner)).

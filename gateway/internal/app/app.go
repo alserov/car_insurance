@@ -2,6 +2,7 @@ package app
 
 import (
 	"context"
+	"github.com/alserov/car_insurance/gateway/internal/cache"
 	"github.com/alserov/car_insurance/gateway/internal/clients/grpc"
 	"github.com/alserov/car_insurance/gateway/internal/config"
 	"github.com/alserov/car_insurance/gateway/internal/logger"
@@ -54,8 +55,11 @@ func MustStart(cfg *config.Config) {
 	// service
 	srvc := service.NewService(cls)
 
+	// cache
+	c := cache.NewCache(cache.Redis)
+
 	// server
-	srvr := server.NewServer(server.Mux, srvc, tracer, log)
+	srvr := server.NewServer(server.Mux, srvc, c, tracer, log)
 
 	// starting server
 	log.Info("server is running")

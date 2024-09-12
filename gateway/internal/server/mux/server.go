@@ -2,6 +2,7 @@ package mux
 
 import (
 	"fmt"
+	"github.com/alserov/car_insurance/gateway/internal/cache"
 	"github.com/alserov/car_insurance/gateway/internal/logger"
 	"github.com/alserov/car_insurance/gateway/internal/middleware"
 	"github.com/alserov/car_insurance/gateway/internal/middleware/mux"
@@ -11,10 +12,11 @@ import (
 	"net/http"
 )
 
-func NewServer(srvc *service.Service, tracer trace.Tracer, log logger.Logger) *server {
+func NewServer(srvc *service.Service, cache cache.Cache, tracer trace.Tracer, log logger.Logger) *server {
 	return &server{
 		app:   http.NewServeMux(),
 		srvc:  srvc,
+		cache: cache,
 		trace: tracer,
 		log:   log,
 	}
@@ -24,13 +26,14 @@ type server struct {
 	app *http.ServeMux
 	lis net.Listener
 
+	cache cache.Cache
 	srvc  *service.Service
 	trace trace.Tracer
 	log   logger.Logger
 }
 
 func (s server) Serve(port string) error {
-	setupRoutes(s.app, newHandler(s.srvc))
+	setupRoutes(s.app, newHandler(s.srvc, s.cache))
 
 	s.app.Handle("/",
 		mux.NewChain(
