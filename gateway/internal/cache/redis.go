@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"github.com/alserov/car_insurance/gateway/internal/utils"
-	rd "github.com/redis/go-redis"
+	rd "github.com/go-redis/redis/v8"
 	"time"
 )
 
@@ -22,14 +22,14 @@ func (r redis) Set(ctx context.Context, key string, val any) error {
 		return utils.NewError(err.Error(), utils.Internal)
 	}
 
-	r.cl.Set(key, b, time.Minute)
+	r.cl.Set(ctx, key, b, time.Minute)
 
 	return nil
 }
 
 func (r redis) Get(ctx context.Context, key string) (any, error) {
 	var val any
-	if err := json.Unmarshal([]byte(r.cl.Get(key).Val()), &val); err != nil {
+	if err := json.Unmarshal([]byte(r.cl.Get(ctx, key).Val()), &val); err != nil {
 		return nil, utils.NewError(err.Error(), utils.Internal)
 	}
 
