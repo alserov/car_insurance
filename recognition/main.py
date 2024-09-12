@@ -8,7 +8,7 @@ app = Flask(__name__)
 # create uploads folder if not exists
 UPLOAD_FOLDER = 'uploads'
 if not os.path.exists(UPLOAD_FOLDER):
-    os.makedir(UPLOAD_FOLDER)
+    os.makedirs(UPLOAD_FOLDER)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 # route for image recognition
