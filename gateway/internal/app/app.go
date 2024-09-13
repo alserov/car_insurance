@@ -59,7 +59,13 @@ func MustStart(cfg *config.Config) {
 	c := cache.NewCache(cache.Redis)
 
 	// server
-	srvr := server.NewServer(server.Mux, srvc, c, tracer, log)
+	srvr := server.NewServer(server.Args{
+		RouterType: server.Mux,
+		Service:    srvc,
+		Cache:      c,
+		Tracer:     tracer,
+		Log:        log,
+	})
 
 	// starting server
 	log.Info("server is running")

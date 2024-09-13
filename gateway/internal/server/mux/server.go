@@ -3,6 +3,7 @@ package mux
 import (
 	"fmt"
 	"github.com/alserov/car_insurance/gateway/internal/cache"
+	"github.com/alserov/car_insurance/gateway/internal/limiter"
 	"github.com/alserov/car_insurance/gateway/internal/logger"
 	"github.com/alserov/car_insurance/gateway/internal/middleware"
 	"github.com/alserov/car_insurance/gateway/internal/middleware/mux"
@@ -42,6 +43,7 @@ func (s server) Serve(port string) error {
 				middleware.WithTracer(s.trace),
 				middleware.WithLogger(s.log),
 			)(s.app),
+			mux.WithLimiter(s.app, limiter.NewLimiter(limiter.LeakyBucket, limiter.DefaultLimit)),
 		),
 	)
 

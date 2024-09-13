@@ -31,10 +31,18 @@ const (
 	Mux
 )
 
-func NewServer(routerType uint, srvc *service.Service, cache cache.Cache, tracer trace.Tracer, log logger.Logger) Server {
-	switch routerType {
+type Args struct {
+	RouterType int
+	Service    *service.Service
+	Cache      cache.Cache
+	Tracer     trace.Tracer
+	Log        logger.Logger
+}
+
+func NewServer(arg Args) Server {
+	switch arg.RouterType {
 	case Mux:
-		return mux.NewServer(srvc, cache, tracer, log)
+		return mux.NewServer(arg.Service, arg.Cache, arg.Tracer, arg.Log)
 	default:
 		panic("invalid router type")
 	}
